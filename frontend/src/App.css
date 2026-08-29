@@ -1,0 +1,5 @@
+/* Vexen application styles. Layout lives in Tailwind; this file stays intentionally small. */
+
+#root {
+    min-height: 100vh;
+}

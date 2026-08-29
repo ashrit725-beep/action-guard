@@ -1,0 +1,315 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    /* ---------------------------------------------------------------
+       LIGHT (default) — airy, friendly, high-legibility surfaces.
+       --------------------------------------------------------------- */
+    :root {
+        color-scheme: light;
+
+        --background: 205 45% 98.5%;
+        --foreground: 214 28% 23%;
+        --card: 0 0% 100%;
+        --card-foreground: 214 28% 23%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 214 28% 23%;
+
+        --primary: 187 68% 37%;
+        --primary-foreground: 0 0% 100%;
+
+        --secondary: 202 44% 96%;
+        --secondary-foreground: 214 26% 30%;
+        --muted: 204 42% 96.5%;
+        --muted-foreground: 212 14% 47%;
+        --accent: 186 50% 93%;
+        --accent-foreground: 190 58% 26%;
+        --destructive: 352 60% 51%;
+        --destructive-foreground: 0 0% 100%;
+
+        --border: 206 30% 91%;
+        --input: 206 28% 88%;
+        --ring: 187 68% 44%;
+        --radius: 0.75rem;
+
+        --surface-2: 204 46% 97.5%;
+        --surface-3: 204 40% 95.5%;
+        --gridline: 206 26% 92%;
+
+        /* Decision colours — soft but unambiguous */
+        --status-allow: 162 52% 33%;
+        --status-approval: 30 76% 43%;
+        --status-block: 352 60% 51%;
+
+        --risk-low: 212 14% 47%;
+        --risk-medium: 199 68% 39%;
+        --risk-high: 30 76% 43%;
+        --risk-critical: 352 60% 51%;
+
+        --shadow-color: 209 32% 55%;
+        --shadow-strength: 1;
+
+        --z-base: 0;
+        --z-dropdown: 100;
+        --z-modal: 200;
+        --z-toast: 300;
+    }
+
+    /* ---------------------------------------------------------------
+       DARK — soft slate (deliberately not near-black).
+       --------------------------------------------------------------- */
+    .dark {
+        color-scheme: dark;
+
+        --background: 214 24% 13%;
+        --foreground: 205 25% 93%;
+        --card: 214 22% 16%;
+        --card-foreground: 205 25% 93%;
+        --popover: 214 22% 17%;
+        --popover-foreground: 205 25% 93%;
+
+        --primary: 186 64% 55%;
+        --primary-foreground: 214 30% 11%;
+
+        --secondary: 214 18% 22%;
+        --secondary-foreground: 205 22% 90%;
+        --muted: 214 18% 21%;
+        --muted-foreground: 210 14% 68%;
+        --accent: 214 18% 24%;
+        --accent-foreground: 205 22% 92%;
+        --destructive: 352 66% 60%;
+        --destructive-foreground: 214 30% 11%;
+
+        --border: 214 15% 26%;
+        --input: 214 15% 28%;
+        --ring: 186 64% 55%;
+
+        --surface-2: 214 21% 17%;
+        --surface-3: 214 19% 20%;
+        --gridline: 214 13% 28%;
+
+        --status-allow: 162 48% 55%;
+        --status-approval: 35 82% 62%;
+        --status-block: 352 72% 66%;
+
+        --risk-low: 210 14% 70%;
+        --risk-medium: 199 70% 63%;
+        --risk-high: 35 82% 62%;
+        --risk-critical: 352 72% 66%;
+
+        --shadow-color: 214 40% 4%;
+        --shadow-strength: 2.2;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        @apply bg-background text-foreground font-sans antialiased;
+        margin: 0;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    .font-display {
+        font-family: "Figtree", ui-sans-serif, sans-serif;
+        letter-spacing: -0.014em;
+    }
+
+    ::selection {
+        background: hsl(var(--primary) / 0.2);
+        color: hsl(var(--foreground));
+    }
+
+    :focus-visible {
+        outline: none;
+        box-shadow:
+            0 0 0 2px hsl(var(--background)),
+            0 0 0 4px hsl(var(--ring) / 0.55);
+        border-radius: 8px;
+    }
+
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: hsl(var(--border));
+        border-radius: 999px;
+        border: 3px solid transparent;
+        background-clip: content-box;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: hsl(var(--muted-foreground) / 0.45);
+        background-clip: content-box;
+    }
+}
+
+@layer components {
+    .vx-card {
+        @apply rounded-xl border border-border bg-card;
+        box-shadow:
+            0 1px 2px hsl(var(--shadow-color) / calc(0.05 * var(--shadow-strength))),
+            0 2px 6px -1px hsl(var(--shadow-color) / calc(0.04 * var(--shadow-strength)));
+    }
+
+    .vx-card-hover {
+        transition:
+            transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 180ms ease;
+    }
+
+    .vx-card-hover:hover {
+        transform: translateY(-2px);
+        border-color: hsl(var(--primary) / 0.35);
+        box-shadow:
+            0 2px 4px hsl(var(--shadow-color) / calc(0.06 * var(--shadow-strength))),
+            0 12px 24px -8px hsl(var(--shadow-color) / calc(0.14 * var(--shadow-strength)));
+    }
+
+    .vx-panel {
+        background-color: hsl(var(--surface-2));
+        @apply rounded-xl border border-border;
+    }
+
+    .vx-glass {
+        background-color: hsl(var(--card) / 0.78);
+        backdrop-filter: blur(16px) saturate(160%);
+        -webkit-backdrop-filter: blur(16px) saturate(160%);
+    }
+
+    .vx-grid-bg {
+        background-image:
+            linear-gradient(to right, hsl(var(--gridline) / 0.7) 1px, transparent 1px),
+            linear-gradient(to bottom, hsl(var(--gridline) / 0.7) 1px, transparent 1px);
+        background-size: 34px 34px;
+    }
+
+    .vx-hero-glow {
+        background:
+            radial-gradient(720px circle at 10% 0%, hsl(187 74% 62% / 0.16), transparent 60%),
+            radial-gradient(560px circle at 92% 6%, hsl(162 58% 62% / 0.11), transparent 62%);
+    }
+
+    .dark .vx-hero-glow {
+        background:
+            radial-gradient(720px circle at 10% 0%, hsl(187 74% 52% / 0.2), transparent 60%),
+            radial-gradient(560px circle at 92% 6%, hsl(162 58% 52% / 0.12), transparent 62%);
+    }
+
+    .vx-mono {
+        font-family: "Roboto Mono", ui-monospace, SFMono-Regular, monospace;
+        font-feature-settings: "zero" 1;
+    }
+
+    .vx-chip {
+        @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold;
+    }
+
+    .vx-label {
+        @apply text-[11px] font-semibold uppercase tracking-[0.13em] text-muted-foreground;
+    }
+
+    .vx-row-link {
+        @apply cursor-pointer transition-colors duration-150 hover:bg-muted/60;
+    }
+
+    .vx-sticky-head th {
+        @apply sticky top-0 z-10 bg-card/95 backdrop-blur;
+    }
+
+    /* Plain-language helper callout used at the top of console pages */
+    .vx-explainer {
+        @apply rounded-xl border px-4 py-3;
+        border-color: hsl(var(--primary) / 0.25);
+        background-color: hsl(var(--accent) / 0.6);
+    }
+}
+
+@layer utilities {
+    .vx-fade-in {
+        animation: vxFadeIn 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .vx-rise {
+        animation: vxRise 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .vx-pulse-dot {
+        animation: vxPulse 2s ease-in-out infinite;
+    }
+
+    .vx-grain::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.035;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+}
+
+@keyframes vxFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes vxRise {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes vxPulse {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.45;
+        transform: scale(0.86);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+}

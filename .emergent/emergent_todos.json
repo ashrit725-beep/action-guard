@@ -1,0 +1,38 @@
+[
+  {
+    "content": "Verify no runtime references to files being deleted (backend, frontend, sdk serving path)",
+    "status": "completed"
+  },
+  {
+    "content": "Delete throwaway scripts in /app/tests (keep smoke_e2e.py + __init__.py)",
+    "status": "completed"
+  },
+  {
+    "content": "Delete root-level throwaway test scripts and results json",
+    "status": "completed"
+  },
+  {
+    "content": "Delete one-off demo/recording/sweep scripts in /app/scripts",
+    "status": "completed"
+  },
+  {
+    "content": "Delete artifact dirs (.darkshots, .darkshots2, .demo_build, .device_sweep) and sweep logs + DEMO_NARRATION_SCRIPT.md",
+    "status": "completed"
+  },
+  {
+    "content": "Remove /app/sdk/python/__pycache__ and stray .pyc files",
+    "status": "completed"
+  },
+  {
+    "content": "Restart backend and run /app/tests/smoke_e2e.py regression check (38/38 passed)",
+    "status": "completed"
+  },
+  {
+    "content": "Fix demo video premature fallback on browsers without H.264 (WebM now plays)",
+    "status": "completed"
+  },
+  {
+    "content": "Verify /app/developers SDK download page + help chatbot still work after cleanup",
+    "status": "completed"
+  }
+]
