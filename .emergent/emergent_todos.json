@@ -1,38 +1,30 @@
 [
   {
-    "content": "Verify no runtime references to files being deleted (backend, frontend, sdk serving path)",
+    "content": "PHASE 12 COMPLETE: Gmail SMTP outbox, approval alert emails, one-tap approve/refuse links, Settings email toggles",
     "status": "completed"
   },
   {
-    "content": "Delete throwaway scripts in /app/tests (keep smoke_e2e.py + __init__.py)",
+    "content": "PHASE 13 COMPLETE: roles Owner/Admin/Approver/Viewer, role guards, invites, Team page, /join/:token",
     "status": "completed"
   },
   {
-    "content": "Delete root-level throwaway test scripts and results json",
+    "content": "PHASE 14 COMPLETE: pywebpush + VAPID, push endpoints, sw.js, manifest + icons, Settings device toggle",
     "status": "completed"
   },
   {
-    "content": "Delete one-off demo/recording/sweep scripts in /app/scripts",
+    "content": "Restore curated requirements.txt and append only the 3 new packages",
     "status": "completed"
   },
   {
-    "content": "Delete artifact dirs (.darkshots, .darkshots2, .demo_build, .device_sweep) and sweep logs + DEMO_NARRATION_SCRIPT.md",
+    "content": "Testing agent verification: 110/110 backend tests passed, zero bugs",
     "status": "completed"
   },
   {
-    "content": "Remove /app/sdk/python/__pycache__ and stray .pyc files",
+    "content": "Extend kept smoke test to 55 checks covering the new features",
     "status": "completed"
   },
   {
-    "content": "Restart backend and run /app/tests/smoke_e2e.py regression check (38/38 passed)",
-    "status": "completed"
-  },
-  {
-    "content": "Fix demo video premature fallback on browsers without H.264 (WebM now plays)",
-    "status": "completed"
-  },
-  {
-    "content": "Verify /app/developers SDK download page + help chatbot still work after cleanup",
+    "content": "Update plan.md, remove test artifacts, leave a real approval email in the user's inbox",
     "status": "completed"
   }
 ]

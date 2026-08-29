@@ -36,10 +36,19 @@ class PasswordChange(BaseModel):
 
 
 class NotificationPrefs(BaseModel):
+    """What each person wants to hear about, in the app and by email.
+
+    Email is opt-out for the one that matters (an agent is paused waiting for a
+    human) and opt-in for the noisier ones.
+    """
+
     approval_requests: bool = True
     blocked_actions: bool = True
     high_risk_agents: bool = True
     weekly_digest: bool = False
+    email_approval_requests: bool = True
+    email_blocked_actions: bool = False
+    email_team_activity: bool = True
 
 
 class AgentDefaults(BaseModel):
@@ -258,3 +267,79 @@ class ContactMessageIn(BaseModel):
     company: Optional[str] = Field(default=None, max_length=100)
     message: str = Field(min_length=10, max_length=4000)
     topic: Optional[str] = Field(default="general", max_length=40)
+
+
+class LinkApprovalDecision(BaseModel):
+    """Decide an approval from a signed email link, with no session."""
+
+    decision: str
+    note: Optional[str] = Field(default=None, max_length=400)
+
+    @field_validator("decision")
+    @classmethod
+    def _decision(cls, v: str) -> str:
+        v = (v or "").lower()
+        if v == "refuse":
+            v = "denied"
+        if v == "approve":
+            v = "approved"
+        if v not in ("approved", "denied"):
+            raise ValueError("decision must be approved or denied")
+        return v
+
+
+# ---------------------------------------------------------------------------
+# Team seats
+# ---------------------------------------------------------------------------
+ASSIGNABLE_ROLES = ("admin", "approver", "viewer")
+
+
+class InviteCreate(BaseModel):
+    email: EmailStr
+    role: str = "approver"
+
+    @field_validator("role")
+    @classmethod
+    def _role(cls, v: str) -> str:
+        v = (v or "").lower().strip()
+        if v not in ASSIGNABLE_ROLES:
+            raise ValueError("role must be admin, approver or viewer")
+        return v
+
+
+class MemberRoleUpdate(BaseModel):
+    role: str
+
+    @field_validator("role")
+    @classmethod
+    def _role(cls, v: str) -> str:
+        v = (v or "").lower().strip()
+        if v not in ASSIGNABLE_ROLES:
+            raise ValueError("role must be admin, approver or viewer")
+        return v
+
+
+class InviteAccept(BaseModel):
+    name: str = Field(min_length=2, max_length=80)
+    password: str = Field(min_length=8, max_length=200)
+
+
+# ---------------------------------------------------------------------------
+# Browser push notifications
+# ---------------------------------------------------------------------------
+class PushKeys(BaseModel):
+    p256dh: str = Field(min_length=10, max_length=400)
+    auth: str = Field(min_length=4, max_length=200)
+
+
+class PushSubscriptionIn(BaseModel):
+    endpoint: str = Field(min_length=10, max_length=800)
+    keys: PushKeys
+
+    @field_validator("endpoint")
+    @classmethod
+    def _endpoint(cls, v: str) -> str:
+        v = (v or "").strip()
+        if not v.startswith("https://"):
+            raise ValueError("endpoint must be an https push service URL")
+        return v

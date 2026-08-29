@@ -1,6 +1,7 @@
 """Vexen application services: seeding, agents, authorization persistence, insights."""
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import re
@@ -32,6 +33,23 @@ from .engine import (
 from .library import resolve_template
 
 UTC = timezone.utc
+
+# Who is allowed to decide an approval, and therefore who is worth emailing.
+APPROVER_ROLES = ("owner", "admin", "approver")
+
+ROLE_LABELS = {
+    "owner": "Owner",
+    "admin": "Admin",
+    "approver": "Approver",
+    "viewer": "Viewer",
+}
+
+ROLE_SUMMARIES = {
+    "owner": "Can do everything, including billing and removing people.",
+    "admin": "Can add agents and change rules, but cannot remove people.",
+    "approver": "Can approve or refuse what is waiting, and see everything.",
+    "viewer": "Can look at everything but cannot change or decide anything.",
+}
 
 # How long a human "yes" stays usable. Real approvals are short-lived: the agent
 # has to come back and use it promptly, once.
@@ -438,6 +456,7 @@ async def evaluate_and_record(
     approval_id: Optional[str] = None,
     simulation_run_id: Optional[str] = None,
     consume_approval: bool = False,
+    base_url: Optional[str] = None,
 ) -> Dict[str, Any]:
     org_id = org["id"]
     agent_id = agent["agent_id"]
@@ -576,6 +595,12 @@ async def evaluate_and_record(
             severity="warning",
             link="/app/approvals",
         )
+        # Email the people who can actually decide this. Queued, never sent here.
+        await queue_approval_alerts(
+            db, org=org, approval=approval_doc, agent=agent, base_url=base_url)
+        # Nudge their phones too, in the background so the agent is not kept waiting.
+        asyncio.create_task(push_approval_alerts(
+            db, org=org, approval=approval_doc, agent=agent, base_url=base_url))
         await add_security_event(
             db, org_id=org_id, kind="approval_required", severity="medium",
             title=f"{agent.get('name')} escalated {result['permission_key']}",
@@ -615,6 +640,118 @@ async def add_notification(db: AsyncIOMotorDatabase, *, org_id: str, kind: str, 
         "body": body[:400], "severity": severity, "link": link,
         "read": False, "created_at": now_utc(),
     })
+
+
+# ---------------------------------------------------------------------------
+# Email alerts (queued only — sending happens in a background worker)
+# ---------------------------------------------------------------------------
+async def alert_recipients(db: AsyncIOMotorDatabase, *, org_id: str,
+                           pref_key: str) -> List[Dict[str, Any]]:
+    """People who may decide approvals AND asked to be emailed about them."""
+    memberships = await db.memberships.find(
+        {"org_id": org_id, "role": {"$in": list(APPROVER_ROLES)}}).to_list(200)
+    if not memberships:
+        return []
+    users = await db.users.find(
+        {"id": {"$in": [m["user_id"] for m in memberships]}}).to_list(200)
+    role_by_user = {m["user_id"]: m.get("role") for m in memberships}
+    wanted = []
+    for user in users:
+        prefs = user.get("notification_prefs") or {}
+        # Missing key means "not yet chosen" — default to on for the important one.
+        if prefs.get(pref_key, pref_key == "email_approval_requests") is False:
+            continue
+        if not (user.get("email") or "").strip():
+            continue
+        wanted.append({**user, "role": role_by_user.get(user["id"])})
+    return wanted
+
+
+async def queue_approval_alerts(db: AsyncIOMotorDatabase, *, org: Dict[str, Any],
+                                approval: Dict[str, Any], agent: Dict[str, Any],
+                                base_url: Optional[str] = None) -> int:
+    """Email everyone who can decide this, with a link that works on a phone.
+
+    This only writes rows into the outbox, so an agent waiting on
+    /api/v1/authorize is never slowed down by a mail server.
+    """
+    from . import links, mailer
+
+    try:
+        recipients = await alert_recipients(
+            db, org_id=org["id"], pref_key="email_approval_requests")
+        if not recipients:
+            return 0
+        app_url = mailer.public_app_url(base_url)
+        console_url = f"{app_url}/app/approvals"
+        label = permission_meta(approval.get("permission_key") or "").get("label") \
+            or approval.get("permission_key")
+        queued = 0
+        for user in recipients:
+            # One link per person, so the audit trail can name who decided.
+            token = links.approval_token(
+                org_id=org["id"], approval_id=approval["id"], user_id=user["id"])
+            subject, text, html = mailer.approval_alert_email(
+                approval=approval,
+                agent_name=agent.get("name") or "An agent",
+                workspace=org.get("name") or "your workspace",
+                permission_label=label,
+                decide_url=f"{app_url}/approve/{token}",
+                console_url=console_url,
+                recipient_name=user.get("name") or "",
+            )
+            sent = await mailer.queue_email(
+                db, to=user["email"], subject=subject, text=text, html=html,
+                kind="approval_alert", org_id=org["id"], user_id=user["id"],
+                dedupe_key=f"approval:{approval['id']}:{user['id']}",
+            )
+            if sent:
+                queued += 1
+        return queued
+    except Exception:  # noqa: BLE001 - an alert must never break a decision
+        return 0
+
+
+async def push_approval_alerts(db: AsyncIOMotorDatabase, *, org: Dict[str, Any],
+                               approval: Dict[str, Any], agent: Dict[str, Any],
+                               base_url: Optional[str] = None) -> None:
+    """Nudge the phones of anyone who turned this device on.
+
+    Fire-and-forget on purpose: a push service being slow must never hold up an
+    agent's authorization call, and email remains the reliable channel.
+    """
+    from . import links, mailer, push
+
+    try:
+        if not push.push_configured():
+            return
+        recipients = await alert_recipients(
+            db, org_id=org["id"], pref_key="email_approval_requests")
+        if not recipients:
+            return
+        app_url = mailer.public_app_url(base_url)
+        label = permission_meta(approval.get("permission_key") or "").get("label") \
+            or approval.get("permission_key") or "do something"
+        amount = approval.get("amount")
+        amount_display = None
+        if amount is not None:
+            symbol = {"USD": "$", "EUR": "\u20ac", "GBP": "\u00a3"}.get(
+                (approval.get("currency") or "USD").upper(), "")
+            amount_display = f"{symbol}{float(amount):,.2f}"
+        for user in recipients:
+            token = links.approval_token(
+                org_id=org["id"], approval_id=approval["id"], user_id=user["id"])
+            await push.send_to_user(
+                db, org_id=org["id"], user_id=user["id"],
+                payload=push.approval_payload(
+                    agent_name=agent.get("name") or "An agent",
+                    what=str(label),
+                    amount_display=amount_display,
+                    decide_url=f"{app_url}/approve/{token}",
+                ),
+            )
+    except Exception:  # noqa: BLE001 - a nudge must never break a decision
+        return
 
 
 async def add_security_event(db: AsyncIOMotorDatabase, *, org_id: str, kind: str, severity: str,

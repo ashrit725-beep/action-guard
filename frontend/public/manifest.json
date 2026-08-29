@@ -1,0 +1,25 @@
+{
+  "short_name": "Vexen",
+  "name": "Vexen — Security for AI agents",
+  "description": "Decide what your AI agents are allowed to do, approve the big things yourself, and see a clear history of every action.",
+  "icons": [
+    {
+      "src": "/icons/vexen-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/vexen-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220"
+}

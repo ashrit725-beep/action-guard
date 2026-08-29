@@ -7,6 +7,7 @@ deny, and produces a tamper-evident audit event.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -24,10 +25,13 @@ load_dotenv(ROOT / ".env")
 
 from vexen.catalog import AGENT_TEMPLATES, PERMISSION_CATALOG  # noqa: E402
 from vexen.db import close_db, ensure_indexes  # noqa: E402
+from vexen.mailer import outbox_worker, smtp_configured  # noqa: E402
 from vexen.routes_agents import router as agents_router  # noqa: E402
 from vexen.routes_auth import router as auth_router  # noqa: E402
 from vexen.routes_governance import router as governance_router  # noqa: E402
 from vexen.routes_ops import public_router, router as ops_router  # noqa: E402
+from vexen.routes_public import public_router as links_router, router as email_router  # noqa: E402
+from vexen.routes_team import public_router as invites_router, router as team_router  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -43,7 +47,21 @@ async def lifespan(app: FastAPI):
         logger.info("Vexen indexes ready")
     except Exception as exc:  # noqa: BLE001
         logger.error("Index setup failed: %s", exc)
+
+    # Outbound email is drained by one background task so that no request —
+    # least of all an agent's authorization call — ever waits on a mail server.
+    stop_mail = asyncio.Event()
+    mail_task = asyncio.create_task(outbox_worker(stop_mail), name="vexen-outbox")
+    logger.info("Email worker started (smtp configured: %s)", smtp_configured())
+
     yield
+
+    stop_mail.set()
+    mail_task.cancel()
+    try:
+        await mail_task
+    except (asyncio.CancelledError, Exception):  # noqa: BLE001
+        pass
     await close_db()
 
 
@@ -106,4 +124,8 @@ app.include_router(auth_router)
 app.include_router(agents_router)
 app.include_router(governance_router)
 app.include_router(ops_router)
+app.include_router(email_router)
+app.include_router(team_router)
 app.include_router(public_router)
+app.include_router(links_router)
+app.include_router(invites_router)

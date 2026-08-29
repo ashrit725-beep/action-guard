@@ -23,6 +23,9 @@ const SecurityCenter = lazy(() => import("@/pages/SecurityCenter"));
 const Policies = lazy(() => import("@/pages/Policies"));
 const Developers = lazy(() => import("@/pages/Developers"));
 const Settings = lazy(() => import("@/pages/Settings"));
+const ApproveByLink = lazy(() => import("@/pages/ApproveByLink"));
+const Team = lazy(() => import("@/pages/Team"));
+const JoinWorkspace = lazy(() => import("@/pages/JoinWorkspace"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const FullScreenLoader = () => (
@@ -89,6 +92,14 @@ function App() {
                 }
               />
 
+              {/* Opened from an approval email on a phone — deliberately works
+                  without signing in, using a signed single-purpose link. */}
+              <Route path="/approve/:token" element={<ApproveByLink />} />
+
+              {/* Accepting a team invitation: the account is created here, so
+                  this must stay reachable without a session. */}
+              <Route path="/join/:token" element={<JoinWorkspace />} />
+
               <Route
                 path="/app"
                 element={
@@ -107,6 +118,7 @@ function App() {
                 <Route path="security" element={<SecurityCenter />} />
                 <Route path="policies" element={<Policies />} />
                 <Route path="developers" element={<Developers />} />
+                <Route path="team" element={<Team />} />
                 <Route path="settings" element={<Settings />} />
                 {/* The old simulator was removed — send anyone with a stale link
                     to the friendlier "Try an action" checker. */}

@@ -14,7 +14,7 @@ from .catalog import (
     permission_meta,
 )
 from .db import clean, clean_many, get_db
-from .deps import Principal, current_principal
+from .deps import Principal, current_principal, editor_principal
 from .library import resolve_template, search_templates, template_detail
 from .models import AgentCreate, AgentUpdate, CredentialCreate, PermissionPatch, PermissionUpsert
 from .service import (
@@ -120,7 +120,7 @@ async def list_agents(
 
 @router.post("/agents", status_code=201)
 async def create_agent(payload: AgentCreate,
-                       principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                       principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     db = get_db()
     if payload.template_id and not resolve_template(payload.template_id):
         raise HTTPException(status_code=422, detail="Unknown agent template.")
@@ -184,7 +184,7 @@ async def _policies_for_agent(db, org_id: str, agent: Dict[str, Any],
 
 @router.patch("/agents/{agent_id}")
 async def update_agent(agent_id: str, payload: AgentUpdate,
-                       principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                       principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     db = get_db()
     await _load_agent(db, principal.org_id, agent_id)
     updates = payload.model_dump(exclude_none=True)
@@ -198,7 +198,7 @@ async def update_agent(agent_id: str, payload: AgentUpdate,
 
 @router.delete("/agents/{agent_id}")
 async def delete_agent(agent_id: str,
-                       principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                       principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     db = get_db()
     await _load_agent(db, principal.org_id, agent_id)
     org_id = principal.org_id
@@ -230,7 +230,7 @@ async def list_permissions(agent_id: str,
 
 @router.post("/agents/{agent_id}/permissions", status_code=201)
 async def create_permission(agent_id: str, payload: PermissionUpsert,
-                            principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                            principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     db = get_db()
     await _load_agent(db, principal.org_id, agent_id)
     if payload.key not in VALID_PERMISSION_KEYS:
@@ -249,7 +249,7 @@ async def create_permission(agent_id: str, payload: PermissionUpsert,
 
 @router.patch("/agents/{agent_id}/permissions/{permission_id}")
 async def patch_permission(agent_id: str, permission_id: str, payload: PermissionPatch,
-                           principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                           principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     db = get_db()
     await _load_agent(db, principal.org_id, agent_id)
     existing = await db.permissions.find_one(
@@ -290,7 +290,7 @@ async def patch_permission(agent_id: str, permission_id: str, payload: Permissio
 
 @router.delete("/agents/{agent_id}/permissions/{permission_id}")
 async def delete_permission(agent_id: str, permission_id: str,
-                            principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                            principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     db = get_db()
     await _load_agent(db, principal.org_id, agent_id)
     result = await db.permissions.delete_one(
@@ -303,7 +303,7 @@ async def delete_permission(agent_id: str, permission_id: str,
 
 @router.post("/agents/{agent_id}/apply-template/{template_id}")
 async def apply_template(agent_id: str, template_id: str,
-                         principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                         principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     """Overlay a template's recommended grants on an existing agent."""
     db = get_db()
     await _load_agent(db, principal.org_id, agent_id)
@@ -343,7 +343,7 @@ async def list_credentials(agent_id: str,
 
 @router.post("/agents/{agent_id}/credentials", status_code=201)
 async def create_credential(agent_id: str, payload: CredentialCreate,
-                            principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                            principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     db = get_db()
     await _load_agent(db, principal.org_id, agent_id)
     active = await db.credentials.count_documents(
@@ -364,7 +364,7 @@ async def create_credential(agent_id: str, payload: CredentialCreate,
 
 @router.delete("/agents/{agent_id}/credentials/{credential_id}")
 async def revoke_credential(agent_id: str, credential_id: str,
-                            principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                            principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     db = get_db()
     await _load_agent(db, principal.org_id, agent_id)
     result = await db.credentials.update_one(

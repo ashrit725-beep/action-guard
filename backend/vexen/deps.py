@@ -68,6 +68,7 @@ class Principal:
     user: Dict[str, Any]
     org: Dict[str, Any]
     session_id: str
+    role: str = "owner"
 
     @property
     def org_id(self) -> str:
@@ -80,6 +81,16 @@ class Principal:
     @property
     def email(self) -> str:
         return str(self.user.get("email", ""))
+
+    @property
+    def can_edit(self) -> bool:
+        """May change agents, rules, keys and workspace settings."""
+        return self.role in ("owner", "admin")
+
+    @property
+    def can_approve(self) -> bool:
+        """May approve or refuse what an agent is waiting on."""
+        return self.role in ("owner", "admin", "approver")
 
 
 def _bearer(request: Request) -> Optional[str]:
@@ -120,10 +131,59 @@ async def current_principal(request: Request) -> Principal:
         {"id": session["id"]},
         {"$set": {"last_seen_at": datetime.now(timezone.utc), "ip": client_ip(request)}},
     )
-    return Principal(user=user, org=org, session_id=session["id"])
+    return Principal(user=user, org=org, session_id=session["id"],
+                     role=str(membership.get("role") or "viewer"))
 
 
 CurrentPrincipal = Depends(current_principal)
+
+
+# ---------------------------------------------------------------------------
+# Roles: who is allowed to change things, and who may only look
+# ---------------------------------------------------------------------------
+ROLES = ("owner", "admin", "approver", "viewer")
+
+ROLE_LABELS = {
+    "owner": "Owner",
+    "admin": "Admin",
+    "approver": "Approver",
+    "viewer": "Viewer",
+}
+
+ROLE_SUMMARIES = {
+    "owner": "Can do everything, including billing and removing people.",
+    "admin": "Can add agents and change rules, but cannot remove people.",
+    "approver": "Can approve or refuse what is waiting, and see everything.",
+    "viewer": "Can look at everything but cannot change or decide anything.",
+}
+
+_ROLE_MESSAGES = {
+    "edit": "Your role can look but not change things. Ask an owner or admin in "
+            "your workspace to make this change.",
+    "approve": "Your role cannot approve or refuse agent actions. Ask an owner, "
+               "admin or approver in your workspace.",
+    "own": "Only the workspace owner can do this.",
+}
+
+
+def require_roles(*allowed: str, kind: str = "edit"):
+    """Build a dependency that only lets certain roles through."""
+
+    async def guard(principal: Principal = Depends(current_principal)) -> Principal:
+        if principal.role not in allowed:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=_ROLE_MESSAGES.get(kind, _ROLE_MESSAGES["edit"]),
+            )
+        return principal
+
+    return guard
+
+
+# Ready-made guards, so every route reads plainly.
+editor_principal = require_roles("owner", "admin", kind="edit")
+approver_principal = require_roles("owner", "admin", "approver", kind="approve")
+owner_principal = require_roles("owner", kind="own")
 
 
 async def agent_principal(request: Request) -> Tuple[Dict[str, Any], Dict[str, Any]]:

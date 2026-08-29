@@ -57,7 +57,8 @@ r = s.get(f"{BASE}/catalog/templates/{tid}")
 check("template detail", r.status_code == 200 and len(r.json().get("permissions", [])) > 0, tid)
 
 # 7. deploy an agent from a variant template
-r = s.post(f"{BASE}/agents", json={"name": "Smoke Shopper", "template_id": "shopping-agent--retail--standard"})
+TEMPLATE = "shopping-agent--retail--standard"
+r = s.post(f"{BASE}/agents", json={"name": "Smoke Shopper", "template_id": TEMPLATE})
 check("deploy variant template", r.status_code == 201, f"{r.status_code} {r.text[:200]}")
 agent = r.json()
 agent_id = agent["agent_id"]
@@ -128,7 +129,68 @@ s2.headers["Authorization"] = f"Bearer {r.json()['access_token']}"
 check("second user isolated (0 agents)", s2.get(f"{BASE}/agents").json().get("total") == 0)
 check("cannot read other tenant agent", s2.get(f"{BASE}/agents/{agent_id}").status_code == 404)
 
-# 15. cleanup
+# 15. alerts plumbing — email and per-device notifications must be reachable
+r = s.get(f"{BASE}/notifications/email")
+check("email status endpoint", r.status_code == 200 and "counts" in r.json(), r.text[:140])
+r = s.patch(f"{BASE}/auth/notifications", json={"email_approval_requests": False})
+check("email prefs save", r.status_code == 200, str(r.status_code))
+r = s.get(f"{BASE}/auth/me")
+prefs = (r.json().get("user") or {}).get("notification_prefs") or {}
+check("email prefs persist", prefs.get("email_approval_requests") is False,
+      json.dumps(prefs)[:160])
+s.patch(f"{BASE}/auth/notifications", json={"email_approval_requests": True})
+r = s.get(f"{BASE}/push/status")
+check("push status endpoint", r.status_code == 200 and "public_key" in r.json(), r.text[:140])
+
+# 16. team seats — invite, roles, and what each role may do
+MATE = f"mate_{rand}@example.com"
+r = s.get(f"{BASE}/team")
+check("team endpoint", r.status_code == 200 and r.json().get("your_role") == "owner", r.text[:140])
+r = s.post(f"{BASE}/team/invites", json={"email": MATE, "role": "viewer"})
+check("invite created", r.status_code == 201, f"{r.status_code} {r.text[:140]}")
+join_url = r.json().get("join_url", "")
+check("invite link is absolute and public", join_url.startswith("http") and "localhost" not in join_url,
+      join_url[:60])
+join_token = join_url.rsplit("/join/", 1)[-1]
+r = requests.get(f"{BASE}/public/invites/{join_token}")
+check("invite preview (no login)", r.status_code == 200 and r.json().get("state") == "pending",
+      r.text[:140])
+r = requests.get(f"{BASE}/public/invites/{join_token[:-2]}aa")
+check("tampered invite refused", r.status_code == 404, str(r.status_code))
+r = requests.post(f"{BASE}/public/invites/{join_token}/accept",
+                  json={"name": "Mate Person", "password": "alllowercase"})
+check("weak password refused on join", r.status_code == 422, str(r.status_code))
+r = requests.post(f"{BASE}/public/invites/{join_token}/accept",
+                  json={"name": "Mate Person", "password": PASSWORD})
+check("invite accepted", r.status_code == 201, f"{r.status_code} {r.text[:140]}")
+s3 = requests.Session()
+s3.headers["Authorization"] = f"Bearer {r.json()['access_token']}"
+check("viewer can read agents", s3.get(f"{BASE}/agents").status_code == 200)
+check("viewer cannot create an agent",
+      s3.post(f"{BASE}/agents", json={"name": "Nope", "template_id": TEMPLATE}).status_code == 403)
+check("viewer cannot invite",
+      s3.post(f"{BASE}/team/invites", json={"email": f"x_{rand}@example.com", "role": "viewer"}).status_code == 403)
+check("viewer cannot manage people",
+      s3.delete(f"{BASE}/team/members/some-id").status_code == 403)
+
+# 17. deciding an approval from an emailed phone link
+r = s.post(f"{BASE}/agents", json={"name": "Link Shopper", "template_id": TEMPLATE})
+link_agent = r.json()["agent_id"]
+link_secret = s.post(f"{BASE}/agents/{link_agent}/credentials",
+                     json={"name": "Smoke link key"}).json()["secret"]
+r = requests.post(f"{BASE}/v1/authorize", headers={"X-Vexen-Key": link_secret},
+                  json={"resource": "shopping", "action": "purchase", "amount": 640,
+                        "resource_id": "smoke-ord-1"})
+body = r.json()
+check("big purchase needs a human", body.get("decision") == "APPROVAL_REQUIRED",
+      str(body.get("decision")))
+link_approval = body.get("approval_id")
+r = s.get(f"{BASE}/notifications/email")
+queued = [m for m in r.json().get("recent", []) if m.get("kind") == "approval_alert"]
+check("approval alert was queued for email", bool(queued), str(len(queued)))
+s.delete(f"{BASE}/agents/{link_agent}")
+
+# 18. cleanup
 check("agent delete", s.delete(f"{BASE}/agents/{agent_id}").status_code == 200)
 
 print("\n" + "=" * 60)

@@ -4,12 +4,19 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from . import ai
 from .catalog import PERMISSION_CATALOG, POLICY_EFFECTS
 from .db import clean, clean_many, get_db
-from .deps import Principal, current_principal, rate_limit
+from .deps import (
+    Principal,
+    approver_principal,
+    current_principal,
+    editor_principal,
+    public_base_url,
+    rate_limit,
+)
 from .engine import ALLOW, APPROVAL_REQUIRED, BLOCK
 from .models import (
     ApprovalDecision,
@@ -63,7 +70,7 @@ async def list_policies(principal: Principal = Depends(current_principal)) -> Di
 
 @router.post("/policies", status_code=201)
 async def create_policy(payload: PolicyCreate,
-                        principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                        principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     db = get_db()
     if payload.effect == "LIMIT" and payload.params.max_amount is None:
         raise HTTPException(status_code=422, detail="A Limit policy needs a maximum amount.")
@@ -103,7 +110,7 @@ async def create_policy(payload: PolicyCreate,
 
 @router.patch("/policies/{policy_id}")
 async def patch_policy(policy_id: str, payload: PolicyPatch,
-                       principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                       principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     db = get_db()
     existing = await db.policies.find_one({"org_id": principal.org_id, "id": policy_id})
     if not existing:
@@ -136,7 +143,7 @@ async def patch_policy(policy_id: str, payload: PolicyPatch,
 
 @router.delete("/policies/{policy_id}")
 async def delete_policy(policy_id: str,
-                        principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                        principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     db = get_db()
     existing = await db.policies.find_one({"org_id": principal.org_id, "id": policy_id})
     if not existing:
@@ -150,7 +157,7 @@ async def delete_policy(policy_id: str,
 
 @router.post("/policies/generate")
 async def generate_policy(payload: PolicyGenerateRequest,
-                          principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                          principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     rate_limit(f"policy-gen:{principal.user_id}", limit=20, window_seconds=300)
     if not ai.generator_available():
         raise HTTPException(status_code=503, detail="The policy generator is not configured.")
@@ -218,8 +225,8 @@ async def list_approvals(principal: Principal = Depends(current_principal),
 
 
 @router.post("/approvals/{approval_id}/decision")
-async def approve_or_deny(approval_id: str, payload: ApprovalDecision,
-                          principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+async def approve_or_deny(approval_id: str, payload: ApprovalDecision, request: Request,
+                          principal: Principal = Depends(approver_principal)) -> Dict[str, Any]:
     db = get_db()
     approval = await db.approvals.find_one({"org_id": principal.org_id, "id": approval_id})
     if not approval:
@@ -252,6 +259,7 @@ async def approve_or_deny(approval_id: str, payload: ApprovalDecision,
             actor_email=principal.email,
             approval_id=approval_id,
             simulation_run_id=updated.get("simulation_run_id"),
+            base_url=public_base_url(request),
         )
     return {"approval": clean(updated), "outcome": outcome}
 

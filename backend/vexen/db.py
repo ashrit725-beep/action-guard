@@ -77,6 +77,25 @@ async def ensure_indexes() -> None:
     await db.simulator_runs.create_index([("org_id", 1), ("created_at", -1)])
     await db.contact_messages.create_index("created_at")
 
+    # Outbound email waits in a queue so nothing on a request path talks to SMTP.
+    await db.email_outbox.create_index([("status", 1), ("next_attempt_at", 1), ("created_at", 1)])
+    await db.email_outbox.create_index([("org_id", 1), ("created_at", -1)])
+    await db.email_outbox.create_index("id", unique=True)
+    # One alert per person per event, even if the same request is retried.
+    await db.email_outbox.create_index(
+        "dedupe_key", unique=True,
+        partialFilterExpression={"dedupe_key": {"$type": "string"}},
+    )
+
+    # Team invitations: one pending invite per address per workspace.
+    await db.invites.create_index("id", unique=True)
+    await db.invites.create_index([("org_id", 1), ("status", 1), ("created_at", -1)])
+    await db.invites.create_index([("org_id", 1), ("email", 1)])
+
+    # One row per browser that asked to be notified.
+    await db.push_subscriptions.create_index("endpoint", unique=True)
+    await db.push_subscriptions.create_index([("org_id", 1), ("user_id", 1)])
+
 
 def jsonable(value: Any) -> Any:
     if isinstance(value, datetime):

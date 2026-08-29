@@ -26,7 +26,7 @@
   - password hashing doesn’t block the event loop
   - unique org/workspace creation never 500s under race
 
-**New objective (Phase 8): “It must actually stop agents” (in-path enforcement)**
+**Objective (Phase 8): “It must actually stop agents” (in-path enforcement)**
 - Provide a **drop-in guard** that wraps the function that performs the real side effect.
 - Default behavior is **fail-closed**: if Vexen is unreachable, the side effect must not run.
 - Ensure enforcement claims are verifiable:
@@ -34,22 +34,28 @@
   - a human approval enables **exactly one retry** within a short window
   - approval replay and scope escalation are refused
 
-**New objective (Phase 9): “In-app help chatbot”**
+**Objective (Phase 9): “In-app help chatbot”**
 - Add a plain-language helper that:
   - is **grounded in the user’s workspace state** (agents/rules/approvals/recent stops)
   - never requests or reveals passwords or API keys
   - does not block the backend event loop
   - is accessible and works on mobile + dark mode
 
-**New objective (Phase 10): “Production cleanup & repo hygiene”**
+**Objective (Phase 10): “Production cleanup & repo hygiene”**
 - Remove non-production test scripts, one-off tooling, and artifact directories.
 - Keep exactly one **legitimate** backend smoke test for regression checks.
 - Do **not** modify or purge MongoDB data as part of cleanup.
 - Ensure the application does not depend on any removed files at runtime.
 
-**New objective (Phase 11): “Robust demo video fallback”**
+**Objective (Phase 11): “Robust demo video fallback”**
 - Ensure the Landing demo video modal doesn’t show a false “cannot play” fallback when the browser can play at least one provided format.
 - Provide a safe fallback UX for codec-limited environments.
+
+**Objective (Phase 12–14): “Enterprise operations: alerts + phone approvals + teams”**
+- **Email alerts**: notify the right people the moment an agent is paused.
+- **Approve-by-phone**: approvals can be decided from a phone without opening the console.
+- **Team seats**: invite teammates and enforce roles server-side.
+- **Browser push**: optional device notifications for approvals.
 
 ---
 
@@ -58,17 +64,6 @@
 ### Phase 1 — Core POC (single script `test_core.py`, fix-until-green)
 **Goal:** prove the hardest pieces in isolation before building the app.
 
-**Build (in script + minimal modules as needed):**
-1. Implement data structures (in-memory) for: Organization, Agent, AgentKey(hashed), Permission(with limits/expiry/approval), Policy, Approval, AuditEvent(immutable).
-2. Implement `authorize(agent_key, action, resource, context)` pipeline with **DEFAULT DENY**.
-3. Implement risk scoring (simple deterministic rules: sensitive resources, blocked attempts, high spend, repeated denies).
-4. Implement approval flow: create pending approval for approval-required decisions; approving/denying produces audit events; enforce no approval bypass.
-5. Implement API key generation + hashing + verification (prefix-visible, secret shown once; verify constant-time compare).
-6. Implement cross-tenant isolation checks.
-7. Implement Anthropic NL→policy generator: prompt → strict JSON schema output (validate) for rules.
-
-**POC Tests:** allow/block/approval-required/policy override/default deny/audit/cross-tenant/schema validation.
-
 **Status:** ✅ Completed.
 
 ---
@@ -76,302 +71,239 @@
 ### Phase 2 — V1 App (FastAPI + MongoDB + React/Tailwind)
 **Goal:** build the full product around the proven core, ensure it’s a real multi-user app, and deliver a polished, light-first UI.
 
-#### Phase 2A — Backend (FastAPI, motor/MongoDB)
-1. Core models/collections.
-2. Auth: email+password, bcrypt hashing, JWT session.
-3. Multi-user enforcement.
-4. Authorization engine + persistence (audit/approvals).
-5. Public agent API (`/api/v1/authorize`) + keys.
-6. App endpoints for console pages.
-7. AI policy generator endpoint.
-
+#### Phase 2A — Backend
 **Status:** ✅ Completed and integrated.
 
----
-
-### Phase 2B — Frontend Completion + UX Polish (React, Tailwind)
-**Goal:** ship a fully navigable, polished console with light-first design, and ensure every feature is wired to the backend.
-
-- Landing, Contact, Login, Signup
-- Dashboard
-- Agents + AgentDetail
-- Policies
-- Approvals
-- Audit Log
-- Security Center
-- Try It + Guide
-- Developers
-- Settings
-
+#### Phase 2B — Frontend Completion + UX Polish
 **Status:** ✅ Completed.
 
 ---
 
-### Phase 3 — End-to-End Testing + Fixes (required)
-- Auth flows
-- Agents + template deploy
-- Policies CRUD + AI generate
-- Approvals workflow
-- Audit log + integrity verify
-- Security Center
-- Try It / Guide
-- Developers docs + key flows
-- Settings
-
+### Phase 3 — End-to-End Testing + Fixes
 **Status:** ✅ Completed (iterations 1–5), plus continued verification thereafter.
 
 ---
 
-### Phase 4 — Demo Video (very high quality)
-**Goal:** ensure the demo video is reliably accessible from the Landing page.
-
-**What was discovered:**
-- Previously shipped MP4 was **corrupt** (missing `moov` atom).
-
-**What was done:**
-1. Regenerated the demo end-to-end.
-2. Published as H.264/AAC MP4 with `+faststart` and normalised loudness.
-3. (Later revised) Retained WebM as an additional fallback source for codec-limited environments.
-4. Verified playback + seeking in Chromium/Firefox/WebKit + iPhone-sized WebKit.
-
+### Phase 4 — Demo Video
 **Status:** ✅ Completed and verified.
 
 ---
 
 ### Phase 5 — Final Polish: Dark Mode QA + Cleanup
-**Goal:** ship a visually impeccable console and remove non-production artifacts.
-
-#### Phase 5A — Full dark-mode screenshot pass
-Completed fixes:
-- Disabled filled buttons look muted/inert in dark mode.
-- Toasts follow Vexen’s **ThemeContext**.
-- Removed nested `<button>` console error by changing metric cards to `div role="button"`.
-
-**Status:** ✅ Completed.
-
-#### Phase 5B — Cleanup non-production artifacts
-- Removed older demo-generation scripts and clutter (earlier pass).
-
-**Status:** ✅ Completed.
-
-#### Phase 5C — Health checks
-- Frontend compiles cleanly.
-- Services healthy.
-- Production build verified.
-
 **Status:** ✅ Completed.
 
 ---
 
 ### Phase 6 — Device & Browser Compatibility (“100,000 devices”)
-**Goal:** reduce real-world breakage across browsers, old phones, strict privacy modes, embedded webviews, and different viewport sizes.
-
-#### Phase 6A — Runtime compatibility hardening
-- Added robust date parsing via `parseDate()` (microsecond ISO normalisation).
-- Intl fallbacks for currency/compact formatting.
-- Clipboard fallback via `copyText()`.
-- Safe storage wrapper (`lib/storage.js`) wired into tokens + ThemeContext.
-
-**Status:** ✅ Completed.
-
-#### Phase 6B — Mobile layout + touch ergonomics
-- No horizontal overflow:
-  - marketing header compresses below 400px (`xs`)
-  - TabsList scrolls horizontally instead of widening the page
-- Better tap targets:
-  - password visibility toggle sized to 32px
-  - switch/toggle has larger hit area
-  - sidebar guide link + contact phone links are >= 32px
-
-**Status:** ✅ Completed.
-
-#### Phase 6C — Cross-engine verification
-- Verified critical flows across system Chromium, Firefox, WebKit/iPhone.
-
 **Status:** ✅ Completed.
 
 ---
 
 ### Phase 7 — “Genuinely real” enforcement + scale readiness
-**Goal:** ensure Vexen behaves like a real security/control plane for agents and holds up under concurrency.
-
-#### Phase 7A — Real approvals lifecycle (backend)
-- Approvals are **single-use**, expire after **30 minutes**.
-- Atomic claim via `find_one_and_update`.
-- Correct consumption point: only in `/api/v1/authorize`.
-
 **Status:** ✅ Completed.
-
-#### Phase 7B — Agent-facing approval polling
-- Added `GET /api/v1/approvals/{approval_id}` (agent-authenticated).
-
-**Status:** ✅ Completed.
-
-#### Phase 7C — Developers page truthfulness
-- Added `public_base_url()` via `x-forwarded-proto/host`.
-- `/api/developers` includes enforcement details.
-- Snippets demonstrate real loop: authorize → poll → retry once.
-
-**Status:** ✅ Completed.
-
-#### Phase 7D — Approvals UI lifecycle clarity
-- Approvals page clearly shows used/expired/pending states.
-
-**Status:** ✅ Completed.
-
-#### Phase 7E — Scale fixes (backend)
-- Workspace slug race-proofing.
-- Rate limiting rebalance.
-- Non-blocking password hashing (threadpool).
-
-**Status:** ✅ Completed and load-tested.
-
-#### Phase 7F — Real-world tests (added)
-- Real-agent and load-testing scripts were created to prove enforcement + scale.
-
-**Status:** ✅ Completed (and later removed in Phase 10, except smoke test).
 
 ---
 
 ### Phase 8 — Genuine in-path enforcement (“actually stops agents”)
-**Goal:** provide the missing piece that makes Vexen *physically* stop real side effects.
-
-#### Phase 8A — Ship a drop-in guard SDK (Python)
-- Implemented `/app/sdk/python/vexen.py` with `authorize`, approval polling, `wait_for_approval`, and `@guard` decorator.
-- Fail closed (`VexenUnavailable`) if Vexen cannot be reached.
-
-**Status:** ✅ Completed.
-
-#### Phase 8B — Distribute the SDK inside the product
-- The app serves the file at `/sdk/vexen.py`.
-- Developers page includes “Stop it in your code” guidance and download button.
-
-**Status:** ✅ Completed.
-
-#### Phase 8C — Proof test with a real LLM agent and real side effects
-- Proved approvals are single-use, replay refused, and Vexen-unreachable fails closed.
-
-**Status:** ✅ Passing.
-
----
-
-### Phase 9 — In-app help chatbot (“help users work the app”)
-**Goal:** help non-technical users succeed with approvals/rules/agents in plain language.
-
-#### Phase 9A — Backend assistant (grounded)
-- Added `backend/vexen/assistant.py`.
-- Added `POST /api/assistant/chat` (auth required).
-
-**Status:** ✅ Completed.
-
-#### Phase 9B — Frontend chat widget
-- Added `frontend/src/components/AssistantWidget.js`.
-
 **Status:** ✅ Completed.
 
 ---
 
-### Phase 10 — Production Cleanup (✅ Completed)
-**Goal:** remove throwaway test scripts and artifacts so they do not ship to production, while keeping one small, legitimate regression smoke test.
-
-**User confirmations applied:**
-- Delete throwaway test scripts (do not archive).
-- Do **not** purge MongoDB dummy/load-test accounts.
-- Keep one legitimate smoke test.
-
-#### Phase 10A — Delete throwaway tests (keep only smoke test) (✅ Completed)
-**Deleted from `/app/tests/`:**
-- `load_check.py`
-- `real_agent_e2e.py`
-- `real_enforcement_proof.py`
-- `chatbot_backend_test.py`
-- `my_enforcement_test.py`
-- `additional_tests.py`
-- `verify_issues.py`
-
-**Kept:**
-- `/app/tests/smoke_e2e.py`
-- `/app/tests/__init__.py`
-
-#### Phase 10B — Delete root-level throwaway test scripts (✅ Completed)
-**Deleted:**
-- `/app/backend_test.py`
-- `/app/test_api.py`
-- `/app/test_core.py`
-- `/app/test_core_flows.py`
-- `/app/test_backend_scale.py`
-- `/app/test_device_compatibility.py`
-- `/app/test_device_compatibility_results.json`
-- `/app/test_video_cross_browser.py`
-
-#### Phase 10C — Delete one-off demo/recording/sweep tooling (✅ Completed)
-**Deleted:**
-- Entire `/app/scripts/` directory
-
-#### Phase 10D — Remove artifact directories and leftover logs (✅ Completed)
-**Deleted:**
-- `/app/.darkshots/`
-- `/app/.darkshots2/`
-- `/app/.demo_build/` (~58MB)
-- `/app/.device_sweep/`
-- `/app/.ruff_cache/`
-- Sweep logs: `.darkpass*.log`, `.demo_build_narration.log`, `.device_sweep*.log`
-- `DEMO_NARRATION_SCRIPT.md`
-
-**Cleanup impact:** removed ~64MB of non-production artifacts.
-
-#### Phase 10E — SDK hygiene (✅ Completed)
-- Removed `/app/sdk/python/__pycache__/` and `.pyc` files.
-
-**Kept:**
-- `/app/sdk/python/vexen.py` (verified byte-identical to `frontend/public/sdk/vexen.py`)
-
-#### Phase 10F — Explicit DB policy (✅ Completed)
-- **No DB data was purged or modified** as part of cleanup (per user instruction).
-
-#### Phase 10G — Post-cleanup verification (✅ Completed)
-Verification results:
-1. Backend restarted cleanly (startup logged: “Vexen indexes ready”).
-2. Smoke test passed:
-   - `python /app/tests/smoke_e2e.py` → **PASSED 38/38**
-3. Frontend compiles:
-   - `esbuild` bundle check clean
-4. Public asset checks:
-   - `/sdk/vexen.py` → 200
-   - `/demo/vexen-demo.mp4` range request → 206
-   - `/demo/vexen-demo.webm` → 200
-   - `/demo/vexen-demo-poster.png` → 200
-5. UI sanity (screenshots): Landing, demo modal (light/dark), guide/console.
-6. Developers page: correct public preview URLs; **Download vexen.py** works under “Stop it in your code” tab.
-7. Assistant chatbot API: `/api/assistant/chat` returned grounded response (200).
+### Phase 9 — In-app help chatbot
+**Status:** ✅ Completed.
 
 ---
 
-### Phase 11 — Cross-browser demo-video fallback fix (✅ Completed)
-**Goal:** prevent a false “This browser could not play the video” fallback when only one `<source>` fails.
+### Phase 10 — Production Cleanup
+**Status:** ✅ Completed.
 
-**Bug discovered:**
-- React forwards `error` events from child `<source>` elements up to the `<video onError>` handler.
-- On browsers **without H.264** (codec-stripped Linux/ARM Chromium builds, some headless environments), the MP4 `<source>` fails and immediately triggered the fallback UI—despite the WebM `<source>` being playable.
+---
 
-**Fix implemented (in `/app/frontend/src/pages/Landing.js`):**
-- Added `handleMediaError()`:
-  - Ignores errors where `event.target` is not the `<video>` element.
-  - Schedules a re-check after 2s and only sets failure if `video.networkState === 3` (`NETWORK_NO_SOURCE`).
-- Added `recheckRef` timeout cleanup on close/unmount.
-- Improved fallback UX: added a second button to open the WebM version directly.
+### Phase 11 — Cross-browser demo-video fallback fix
+**Status:** ✅ Completed.
 
-**Verification:**
-- In a codec-limited Headless Chrome environment (`canPlayType` H.264 empty; VP9 “probably”):
-  - video plays using `/demo/vexen-demo.webm`
-  - `readyState: 4`, duration ~156s, currentTime advances
-  - no premature fallback, confirmed in light + dark.
+**Fix recorded:** browsers without H.264 previously triggered a false failure because React forwarded `<source>` errors to the `<video>` handler. Landing modal now waits for `NETWORK_NO_SOURCE` before showing the fallback and includes a direct WebM fallback link.
+
+---
+
+### Phase 12 — Email alerts + one-tap approve/refuse by phone
+**Goal:** the moment an agent is paused waiting for a human, the right people get an email with big Approve / Refuse buttons that work on any phone.
+
+**Locked decisions (from user):**
+- Email transport: **Gmail SMTP** (sender: `email.vexanai@gmail.com`, app password).
+- Approve-by-phone: **email one-tap links** + **browser push** (Phase 14). **NO SMS / no Twilio**.
+- Recipients: **per-person toggle**, default recipients are **Owners + Admins + Approvers**.
+
+#### Phase 12A — Mail plumbing (backend)
+**Status:** ✅ Completed.
+- New `/app/backend/vexen/mailer.py`:
+  - Gmail SMTP sender using `aiosmtplib`
+  - STARTTLS on `smtp.gmail.com:587` (465 implicit TLS fallback)
+  - multipart (plain + HTML), friendly From (`Vexen Security`), Reply-To, Message-ID, Auto-Submitted
+  - strips cosmetic spaces from Gmail app passwords
+- Mongo `email_outbox`:
+  - `{id, org_id, user_id, to, subject, html, text, kind, status, attempts, last_error, created_at, next_attempt_at, sent_at}`
+  - indexes: status/next_attempt_at/created_at; org_id/created_at; id unique; dedupe_key unique (partial)
+- Background drain worker started in FastAPI lifespan:
+  - atomic claim (`find_one_and_update`) → cannot send twice
+  - retries capped at 5 with exponential backoff up to 30m
+  - terminal errors: auth failures (535/534) / authentication exceptions
+  - spacing: 0.6s between sends to stay under Gmail quotas
+  - request paths never touch SMTP
+
+#### Phase 12B — Signed one-tap approval links (secure + scan-safe)
+**Status:** ✅ Completed.
+- New `/app/backend/vexen/links.py`:
+  - HMAC-SHA256 signed tokens w/ domain separation (`vexen-link-v1:` + `JWT_SECRET`)
+  - carries org id + approval id + **recipient user id**; TTL 24h
+  - verify returns None (never raises, never explains)
+- New `/app/backend/vexen/routes_public.py`:
+  - `GET /api/public/approvals/{token}` is read-only preview
+  - `POST /api/public/approvals/{token}/decision` decides (approve/deny)
+  - **Security design**: GET never mutates (scan-safe against link-prefetch)
+  - reuses the same decision logic as console and re-evaluates request so enforcement invariants remain real
+
+#### Phase 12C — Recipient selection + per-person Settings
+**Status:** ✅ Completed.
+- `NotificationPrefs` extended:
+  - `email_approval_requests` (default on)
+  - `email_blocked_actions` (default off)
+  - `email_team_activity` (default on)
+- Recipients:
+  - membership role in `(owner, admin, approver)` AND user’s own toggle enabled
+
+#### Phase 12D — Frontend approve-by-link page
+**Status:** ✅ Completed.
+- New public page `/approve/:token` (`/app/frontend/src/pages/ApproveByLink.js`)
+  - mobile-first, large touch targets, optional note
+  - all states: loading, pending, approved/refused, already decided, expired/invalid
+  - light/dark supported
+
+#### Phase 12E — Hook into hot path (queue only)
+**Status:** ✅ Completed.
+- `service.evaluate_and_record(...)` now accepts `base_url`
+- callers pass `public_base_url(request)` so links are publicly reachable
+- approvals queue email into outbox only (non-blocking)
+
+#### Phase 12 Verification Evidence
+- Targeted suite: **22/22** checks passed, including a **real Gmail delivery**.
+- Security: GET does not approve; tampered token returns 404; token is single-use; decision recorded to the correct recipient.
+- Regression: global smoke still green.
+
+---
+
+### Phase 13 — Team seats: invites + roles
+**Goal:** multi-user workspaces with roles and invites; strict backend enforcement.
+
+#### Phase 13A — Roles model + enforcement
+**Status:** ✅ Completed.
+- Roles:
+  - `owner`: everything
+  - `admin`: manage agents/policies/keys; invite approver/viewer; cannot manage members
+  - `approver`: approve/deny + read-only
+  - `viewer`: read-only
+- `Principal` now includes `role`; role guards added:
+  - `editor_principal` (owner/admin)
+  - `approver_principal` (owner/admin/approver)
+  - `owner_principal` (owner only)
+- Applied to **18** mutating endpoints across agents, governance, org settings, simulator, approvals.
+
+#### Phase 13B — Invitations
+**Status:** ✅ Completed.
+- New `/app/backend/vexen/routes_team.py`:
+  - `GET /api/team`
+  - `POST /api/team/invites`
+  - `POST /api/team/invites/{id}/resend`
+  - `DELETE /api/team/invites/{id}`
+  - `PATCH /api/team/members/{user_id}` (owner only)
+  - `DELETE /api/team/members/{user_id}` (owner only; revokes sessions)
+  - public:
+    - `GET /api/public/invites/{token}` preview
+    - `POST /api/public/invites/{token}/accept` (creates user inside org)
+- Rules:
+  - owner can invite admin/approver/viewer
+  - admin can invite approver/viewer only
+  - approver/viewer cannot invite
+  - role=owner rejected
+- Invite delivered via email outbox; link is `/join/<token>` (7 days)
+- Team changes are recorded as **in-app notifications** (not in the audit hash chain, which is reserved for agent decisions).
+
+**Bug found + fixed (Phase 13):**
+- Invite acceptance previously allowed weak passwords; now uses same `password_problems()` rules as signup (returns 422).
+
+**Known MVP limitation:**
+- One account belongs to one workspace; accepting invite for an email that already has a Vexen account returns 409 with a clear explanation.
+
+#### Phase 13C — Team page (frontend)
+**Status:** ✅ Completed.
+- New `/app/team` page:
+  - members list + role badges
+  - invite dialog with role cards + descriptions
+  - pending invites: resend/cancel, copy link
+  - owner Manage menu: role change and remove member with confirmation
+  - role-aware UI (approver/viewer cannot invite; only owner sees manage)
+- New public `/join/:token` page:
+  - shows workspace + role + invited email
+  - requires strong password
+  - on success signs in and lands in `/app/guide`
+- Sidebar includes “My team”; account menu shows user’s role.
+
+#### Phase 13 Verification Evidence
+- Targeted suite: **44/44** checks passed.
+- Verified all role restrictions across all mutating endpoints.
+
+---
+
+### Phase 14 — Browser push notifications
+**Goal:** optional device notifications that can take the user straight to the approval decision page.
+
+#### Phase 14A — VAPID + backend
+**Status:** ✅ Completed.
+- Installed: `pywebpush`, `py-vapid`
+- VAPID keys generated once and appended to backend `.env`:
+  - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
+- New `/app/backend/vexen/push.py`:
+  - uses `asyncio.to_thread` (blocking library)
+  - prunes dead subscriptions on 404/410
+  - never raises to the caller
+- New endpoints:
+  - `GET /api/push/status`
+  - `POST /api/push/subscribe` (https-only endpoint)
+  - `DELETE /api/push/subscribe` (one endpoint or all)
+  - `POST /api/push/test` (honest messaging)
+- Subscriptions stored in `push_subscriptions` with indexes:
+  - unique `endpoint`
+  - `(org_id, user_id)`
+- `push_approval_alerts()` is fired via `asyncio.create_task(...)` from approval creation; never blocks `/api/v1/authorize`.
+
+#### Phase 14B — Frontend + service worker
+**Status:** ✅ Completed.
+- New minimal service worker `/sw.js`:
+  - handles `push` and `notificationclick` only
+  - no caching and no fetch interception (normal app behavior unchanged)
+- Added `/manifest.json` + icons (`/icons/*`, `/favicon.png`)
+  - enables Add-to-Home-Screen for iOS push
+- New `/app/frontend/src/lib/push.js`:
+  - honest capability detection: unsupported, permission denied, iOS needs install
+- Settings “Alerts” tab:
+  - new “Notify me on this device” card with toggle and “Send me a test” button
+  - disables toggle with clear text when push cannot work
+
+#### Phase 14 Verification Evidence
+- API endpoints exercised end-to-end.
+- Static assets verified 200: `/sw.js`, `/manifest.json`, icons.
+- Service worker registration verified without breaking the landing page.
+- Note: actual lock-screen delivery cannot be proven from headless automation; requires user confirmation on their own device.
 
 ---
 
 ## 3) Next Actions
-- **None outstanding (engineering).**
-- Await **user testing/feedback** and any requested follow-up work (deployment readiness, monitoring, additional policies, enterprise features).
+1. **User acceptance testing**:
+   - Confirm approval emails land quickly and the approve/refuse link works on your phone.
+   - Turn on “Notify me on this device” on a real phone (iOS requires add-to-home-screen).
+   - Invite a teammate and confirm role restrictions match expectation.
+2. (Optional hardening) Add a small admin “Delivery” panel for the email outbox if desired (currently visible via API).
+3. (Optional future) Multi-workspace switching (removes the 1-account/1-org limitation).
 
 ---
 
@@ -388,8 +320,44 @@ Verification results:
 - **Scale sanity:** concurrent signups/logins don’t crash; rate limits don’t lock out shared-IP users; password hashing doesn’t block other requests.
 - **In-path enforcement:** the shipped guard SDK prevents side effects when blocked/unreachable, and only allows the approved action once.
 - **In-app assistant:** grounded, plain-language answers; no key/password leakage; does not block the server; works on desktop + mobile + dark mode.
-- **Production hygiene:**
-  - throwaway test scripts, one-off tooling, and artifact directories are removed
-  - only `/app/tests/smoke_e2e.py` remains as a supported regression test
-  - no DB records were modified/purged during cleanup
-  - backend still runs and smoke test passes after cleanup
+- **Production hygiene:** throwaway scripts/artifacts removed; smoke test passes.
+
+**Success criteria (Phases 12–14):**
+- When an agent enters `APPROVAL_REQUIRED`, Vexen queues **exactly one** approval alert per eligible recipient (subject to per-person toggles) without slowing `/api/v1/authorize`.
+- Approval alert email arrives (Gmail SMTP) and includes an approve-by-link URL that works on mobile.
+- Approve-by-link is scan-safe (GET never performs the decision); user must tap confirm.
+- Role enforcement:
+  - viewers cannot mutate anything (403)
+  - approvers can decide approvals but cannot edit policies/agents
+  - admins can manage policies/agents but cannot remove members or create new admins
+  - only owners can change roles and remove members
+- Invite flow:
+  - invite email sent via outbox
+  - accept invite creates account in org and assigns role
+  - invite token is single-use; revoked invites cannot be used
+- Push notifications:
+  - subscription stored per-device
+  - push message opens the correct decision screen
+  - dead subscriptions are pruned automatically on 404/410
+
+---
+
+## 5) Verification Evidence (Artifacts)
+- `/app/test_reports/iteration_6.json` — **testing_agent_v3** independent verification:
+  - **110/110 backend tests passed**
+  - no critical bugs, no regressions
+  - tenant isolation confirmed including new unauthenticated `/api/public/*` routes
+- `/app/tests/smoke_e2e.py` — maintained regression test:
+  - extended to **55/55** checks covering Phases 12–14
+
+---
+
+## 6) Deployment Notes (Required environment variables)
+Backend `.env` (in addition to existing keys) may include:
+- SMTP:
+  - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`, `SMTP_FROM_NAME`
+  - `PUBLIC_APP_URL`
+- Push:
+  - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
+
+**Fail-safe behavior:** If SMTP or VAPID are missing, the app still works; emails remain queued and the push card reports that notifications are not set up.

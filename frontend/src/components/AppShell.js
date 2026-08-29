@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   User as UserIcon,
+  Users,
   Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,7 @@ const NAV = [
     counter: "findings",
   },
   { to: "/app/developers", label: "For developers", icon: Code2, testId: "sidebar-nav-developers" },
+  { to: "/app/team", label: "My team", icon: Users, testId: "sidebar-nav-team" },
   { to: "/app/settings", label: "Settings", icon: SettingsIcon, testId: "sidebar-nav-settings" },
 ];
 
@@ -106,7 +108,7 @@ const NavItems = ({ counts, onNavigate }) => (
 );
 
 export default function AppShell() {
-  const { user, organization, logout } = useAuth();
+  const { user, organization, role, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [counts, setCounts] = useState({ approvals: 0, findings: 0, unread: 0 });
@@ -209,10 +211,18 @@ export default function AppShell() {
             <DropdownMenuContent align="start" className="w-60">
               <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground">
                 {user?.email}
+                {role ? (
+                  <span className="mt-0.5 block capitalize text-foreground" data-testid="sidebar-your-role">
+                    {role} in this workspace
+                  </span>
+                ) : null}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/app/settings")} data-testid="menu-profile">
                 <UserIcon className="mr-2 h-4 w-4" /> My account
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/app/team")} data-testid="menu-team">
+                <Users className="mr-2 h-4 w-4" /> My team
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate("/app/guide")} data-testid="menu-guide">
                 <BookOpen className="mr-2 h-4 w-4" /> How to use Vexen

@@ -10,8 +10,10 @@ from .db import clean, clean_many, get_db
 from .deps import (
     AgentPrincipal,
     Principal,
+    approver_principal,
     client_ip,
     current_principal,
+    editor_principal,
     public_base_url,
     rate_limit,
 )
@@ -82,7 +84,7 @@ async def get_organization(principal: Principal = Depends(current_principal)) ->
 
 @router.patch("/organization")
 async def update_organization(payload: OrganizationUpdate,
-                              principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                              principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     db = get_db()
     membership = await db.memberships.find_one(
         {"org_id": principal.org_id, "user_id": principal.user_id})
@@ -159,7 +161,7 @@ def _run_summary(steps: List[Dict[str, Any]]) -> Dict[str, Any]:
 
 @router.post("/simulator/runs", status_code=201)
 async def start_run(payload: SimulatorStart,
-                    principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                    principal: Principal = Depends(approver_principal)) -> Dict[str, Any]:
     rate_limit(f"sim:{principal.user_id}", limit=60, window_seconds=300)
     db = get_db()
     scenario = SCENARIO_BY_ID.get(payload.scenario_id)
@@ -222,8 +224,8 @@ async def get_run(run_id: str, principal: Principal = Depends(current_principal)
 
 
 @router.post("/simulator/runs/{run_id}/step")
-async def run_step(run_id: str,
-                   principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+async def run_step(run_id: str, request: Request,
+                   principal: Principal = Depends(approver_principal)) -> Dict[str, Any]:
     db = get_db()
     run = await db.simulator_runs.find_one({"org_id": principal.org_id, "id": run_id})
     if not run:
@@ -267,6 +269,7 @@ async def run_step(run_id: str,
         },
         source="simulator", actor_email=principal.email,
         approval_id=approval_id, simulation_run_id=run_id,
+        base_url=public_base_url(request),
     )
 
     step["decision"] = result["decision"]
@@ -320,7 +323,7 @@ async def run_step(run_id: str,
 
 @router.post("/simulator/runs/{run_id}/reset")
 async def reset_run(run_id: str,
-                    principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+                    principal: Principal = Depends(approver_principal)) -> Dict[str, Any]:
     db = get_db()
     run = await db.simulator_runs.find_one({"org_id": principal.org_id, "id": run_id})
     if not run:
@@ -393,6 +396,7 @@ async def authorize_endpoint(payload: AuthorizeRequest, request: Request,
         # This is the real enforcement point, so this is where a human's
         # one-time approval actually gets spent.
         consume_approval=True,
+        base_url=public_base_url(request),
     )
     return {
         "decision": result["decision"],
