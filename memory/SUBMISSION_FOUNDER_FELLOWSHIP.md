@@ -3,12 +3,12 @@
 Form questions answered below. Assumptions I made — CONFIRM BEFORE SUBMITTING:
 - Founding team: solo founder, no co-founder yet.
 - Fundraising: has NOT raised and has NOT run a process in the last 6 months.
-- Vexen user count: 1,000+ (per founder's background note).
+- Vexen user count: 5,000+ (confirmed by founder).
 - Live product link uses the current preview URL; swap for a custom domain if one
   exists.
 
 Founder facts used: HealthLens 70k+, AI-Namo 20k+ (adopted by a local
-government), GreenGuide 10k+, CerebroAegis 5k+, Vexen 1k+, PythonPal 100+
+government), GreenGuide 10k+, CerebroAegis 5k+, Vexen 5k+, PythonPal 100+
 students, HorizonSTEM 150+. COO of The1550Formula, ~$70k/month, 1,000+ students,
 ~+200 SAT points. Educational YouTube channel 3M+ views.
 
@@ -21,7 +21,7 @@ No — I am a solo founder.
 I designed, built, tested and deployed all of Vexen myself over two months: the
 deterministic decision engine, the multi-tenant backend, the console, the email
 and push delivery paths, the Python SDK, and the 10,639-configuration library. It
-is live with over 1,000 users.
+is live with over 5,000 users.
 
 I am actively looking for a founding engineer and a first go-to-market hire. Both
 profiles, and why those two specifically, are in my answer to the recruiting
@@ -154,7 +154,7 @@ it.
 ## Q: What progress have you made on this idea?
 
 Vexen is live and deployed with real users — not a prototype. Built solo in two
-months, currently past 1,000 users, no paid acquisition.
+months, currently past 5,000 users, no paid acquisition.
 
 Working today:
 
@@ -277,3 +277,30 @@ people who care about invariants rather than roadmaps, and it is the same method
 that got my previous products their first users. The go-to-market hire is the one
 I do not know how to source alone, and it is one of the specific things I would
 ask this fellowship for.
+
+---
+
+## Short-form fields (verified character counts, CRLF-safe)
+
+Startup name: Vexen
+
+One-liner (95 / 100):
+The permission layer for AI agents - for any team whose agents can spend money on their behalf.
+
+Primary category: Infrastructure / Developer Tools
+  (if unavailable: Security / Cybersecurity)
+Secondary category: Security / Cybersecurity
+  (if unavailable: B2B SaaS / Enterprise Software)
+
+Company website: https://action-guard-1.preview.emergentagent.com
+Founded: June 2026        <- CONFIRM
+Product launch: July 2026 <- CONFIRM
+
+Pitch deck: 18 slides, 3.7 MB
+  /app/memory/vexen-pitch-deck.pdf
+  https://action-guard-1.preview.emergentagent.com/api/download/pitch-deck
+
+Startup description (780 / 800), Anything else (969 / 1000) and
+Traction notes (981 / 1000) are the exact strings held in
+/app/deck/check_fields.py - run `python /app/deck/check_fields.py` to re-verify
+counts after any edit.

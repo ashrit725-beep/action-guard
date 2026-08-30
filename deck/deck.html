@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Vexen — Pre-seed Deck</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+/* ---------------------------------------------------------------- tokens */
+:root{
+  --bg:hsl(222 47% 6%);
+  --surface:hsl(222 47% 8%);
+  --surface2:hsl(222 30% 10%);
+  --surface3:hsl(222 26% 12%);
+  --fg:hsl(210 40% 98%);
+  --muted:hsl(215 20% 70%);
+  --dim:hsl(215 16% 52%);
+  --border:hsl(222 22% 18%);
+  --grid:hsl(222 18% 22%);
+  --primary:hsl(190 95% 42%);
+  --allow:hsl(173 80% 40%);
+  --approval:hsl(38 92% 50%);
+  --block:hsl(355 78% 56%);
+
+  --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:48px; --s6:64px; --s7:84px;
+  --r-sm:8px; --r:12px; --r-lg:18px;
+}
+@page{size:1600px 900px;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#000}
+body{
+  font-family:'IBM Plex Sans',ui-sans-serif,system-ui;
+  color:var(--fg);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:geometricPrecision;
+}
+
+/* ---------------------------------------------------------------- slide */
+.slide{
+  position:relative;width:1600px;height:900px;overflow:hidden;
+  background:var(--bg);
+  padding:var(--s7) var(--s7) 64px;
+  display:flex;flex-direction:column;
+  page-break-after:always;break-after:page;
+}
+.slide:last-child{page-break-after:auto;break-after:auto}
+/* subtle grain so large dark surfaces do not read as flat */
+.slide::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.035;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+}
+/* hairline top accent */
+.slide::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--primary) 0%,hsl(190 95% 42% / .25) 38%,transparent 72%);
+}
+
+/* ---------------------------------------------------------------- chrome */
+.top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:var(--s5)}
+.kicker{
+  font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--primary);
+}
+.wm{
+  font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;
+  letter-spacing:-.01em;color:var(--dim);
+}
+.wm b{color:var(--fg);font-weight:600}
+.wm i{color:var(--primary);font-style:normal}
+.snum{
+  position:absolute;right:var(--s7);bottom:40px;
+  font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--dim);
+  letter-spacing:.14em;
+}
+.foot{
+  position:absolute;left:var(--s7);bottom:40px;
+  font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--dim);
+  letter-spacing:.06em;
+}
+
+/* ---------------------------------------------------------------- type */
+h1{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;
+  font-size:60px;line-height:1.04;letter-spacing:-.028em;
+  max-width:23ch;
+}
+h1.sm{font-size:50px;max-width:26ch}
+h1.xs{font-size:44px;max-width:30ch}
+h2{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;
+  font-size:21px;line-height:1.25;letter-spacing:-.012em;
+}
+.lede{font-size:22px;line-height:1.5;color:var(--muted);max-width:82ch;margin-top:var(--s3)}
+.lede.narrow{max-width:58ch}
+p{font-size:18px;line-height:1.55;color:var(--muted)}
+.body{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
+.tight{justify-content:flex-start}
+strong{color:var(--fg);font-weight:600}
+.mono{font-family:'IBM Plex Mono',monospace}
+.lbl{
+  font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--dim);
+}
+
+/* ---------------------------------------------------------------- layout */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:var(--s3)}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s3)}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--s2)}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.split{display:grid;grid-template-columns:1.05fr .95fr;gap:var(--s5);align-items:start}
+.stack{display:flex;flex-direction:column;gap:var(--s3)}
+.row{display:flex;gap:var(--s2);flex-wrap:wrap}
+.mt3{margin-top:var(--s3)}.mt4{margin-top:var(--s4)}.mt5{margin-top:var(--s5)}
+.rule{height:1px;background:var(--border);border:0}
+
+/* ---------------------------------------------------------------- cards */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:26px 28px;
+}
+.card.flat{background:var(--surface2)}
+.card h2{margin-bottom:12px}
+.card p{font-size:17px;line-height:1.5}
+.card .lbl{margin-bottom:14px}
+.card.accent{border-color:hsl(190 95% 42% / .38);background:hsl(190 95% 42% / .06)}
+.card.warn{border-color:hsl(38 92% 50% / .34);background:hsl(38 92% 50% / .06)}
+
+.callout{
+  border-left:3px solid var(--primary);
+  background:hsl(190 95% 42% / .06);
+  border-radius:0 var(--r) var(--r) 0;
+  padding:22px 28px;
+}
+.callout p{font-size:19px;line-height:1.5;color:var(--fg)}
+
+/* ---------------------------------------------------------------- stats */
+.stat .n{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:56px;
+  line-height:1;letter-spacing:-.03em;
+}
+.stat .n.p{color:var(--primary)}
+.stat .k{margin-top:12px;font-size:16px;line-height:1.4;color:var(--muted)}
+.stat .lbl{margin-bottom:0}
+
+/* ---------------------------------------------------------------- chips */
+.chip{
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;
+  letter-spacing:.1em;text-transform:uppercase;
+  padding:9px 15px;border-radius:999px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--muted);
+}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.chip.allow{color:var(--allow);border-color:hsl(173 80% 40% / .42);background:hsl(173 80% 40% / .12)}
+.chip.appr{color:var(--approval);border-color:hsl(38 92% 50% / .42);background:hsl(38 92% 50% / .12)}
+.chip.block{color:var(--block);border-color:hsl(355 78% 56% / .42);background:hsl(355 78% 56% / .12)}
+.chip.sq{border-radius:var(--r-sm)}
+
+/* ---------------------------------------------------------------- code */
+.code{
+  font-family:'IBM Plex Mono',monospace;font-size:16px;line-height:1.75;
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  padding:22px 24px;color:var(--fg);white-space:pre;
+}
+.code .c{color:var(--dim)}
+.code .k{color:var(--primary)}
+.code .s{color:var(--allow)}
+.code .n{color:var(--approval)}
+.code.sm{font-size:14.5px;line-height:1.7}
+
+/* ---------------------------------------------------------------- table */
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:15px 18px;font-size:17px;vertical-align:top}
+th{
+  font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--dim);
+  border-bottom:1px solid var(--grid);padding-bottom:11px;
+}
+td{border-bottom:1px solid var(--border);color:var(--muted)}
+tr:last-child td{border-bottom:0}
+td.h{color:var(--fg);font-weight:500;font-family:'Space Grotesk',sans-serif}
+td.mono{font-family:'IBM Plex Mono',monospace;font-size:15px}
+table.compact th{padding:9px 16px 10px}
+table.compact td{padding:9px 16px;font-size:16.5px;line-height:1.45}
+table.compact td.mono{font-size:14.5px}
+
+/* ---------------------------------------------------------------- steps */
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:11px}
+.step{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:14px 15px;
+}
+.step .i{
+  font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--primary);
+  letter-spacing:.12em;
+}
+.step .t{margin-top:7px;font-size:15.5px;line-height:1.3;color:var(--fg)}
+.step.last{border-color:hsl(173 80% 40% / .4);background:hsl(173 80% 40% / .09)}
+
+/* ---------------------------------------------------------------- timeline */
+.tl{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:var(--s4)}
+.tl .c{padding:0 22px 0 0;position:relative}
+.tl .c:first-child{padding-left:0}
+.tl .bar{height:3px;background:var(--grid);margin-bottom:20px;position:relative}
+.tl .bar b{position:absolute;left:0;top:-4px;width:11px;height:11px;border-radius:50%;background:var(--grid)}
+.tl .c.now .bar{background:hsl(355 78% 56% / .45)}
+.tl .c.now .bar b{background:var(--block)}
+.tl .era{font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.tl .who{font-family:'Space Grotesk',sans-serif;font-size:25px;font-weight:600;margin-top:9px;letter-spacing:-.02em}
+.tl .c.now .who{color:var(--block)}
+
+/* ---------------------------------------------------------------- phone */
+.phone{
+  width:392px;background:var(--surface);border:1px solid var(--border);
+  border-radius:26px;padding:24px;box-shadow:0 0 0 8px hsl(222 30% 10% / .8);
+}
+.phone .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.phone .amt{
+  font-family:'Space Grotesk',sans-serif;font-size:44px;font-weight:600;
+  letter-spacing:-.03em;margin:6px 0 4px;
+}
+.phone .meta{font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--muted);line-height:1.85}
+.phone .meta b{color:var(--fg);font-weight:500}
+.phone .why{
+  margin:18px 0;padding:13px 15px;border-radius:var(--r-sm);
+  background:hsl(38 92% 50% / .1);border:1px solid hsl(38 92% 50% / .3);
+  font-size:15px;color:var(--approval);line-height:1.4;
+}
+.btns{display:grid;grid-template-columns:1.35fr 1fr;gap:11px;margin-top:6px}
+.btn{
+  text-align:center;padding:15px;border-radius:var(--r);font-size:16px;font-weight:600;
+  font-family:'Space Grotesk',sans-serif;letter-spacing:-.01em;
+}
+.btn.ok{background:var(--allow);color:hsl(222 47% 6%)}
+.btn.no{background:var(--surface3);border:1px solid var(--border);color:var(--fg)}
+
+/* ---------------------------------------------------------------- cover */
+.cover{justify-content:space-between;padding-bottom:98px}
+.cover .mark{
+  font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:88px;
+  letter-spacing:-.05em;line-height:1;
+}
+.cover .mark i{color:var(--primary);font-style:normal}
+.cover h1{font-size:76px;max-width:21ch;margin-top:var(--s4)}
+.cover .tag{
+  font-family:'IBM Plex Mono',monospace;font-size:15px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--primary);margin-top:14px;
+}
+.metaline{
+  display:flex;gap:0;border-top:1px solid var(--border);padding-top:26px;
+}
+.metaline div{flex:1;padding-right:24px}
+.metaline .lbl{margin-bottom:9px}
+.metaline .v{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:500;letter-spacing:-.01em}
+.metaline .v.p{color:var(--primary)}
+
+/* ---------------------------------------------------------------- end */
+.end .body{justify-content:center}
+.end h1{font-size:74px;max-width:32ch;line-height:1.06}
+.end h1 span{color:var(--dim)}
+</style>
+</head>
+<body>
+
+<!-- ============================================================ 01 COVER -->
+<section class="slide cover">
+  <div class="top"><span class="kicker">Pre-seed · 2026</span><span class="wm mono">youtu.be/V5SaKRhMmcM</span></div>
+  <div>
+    <div class="mark">VE<i>X</i>EN</div>
+    <div class="tag">Control AI.</div>
+    <h1>The permission layer for AI&nbsp;agents.</h1>
+    <p class="lede" style="max-width:74ch">One API call answers <strong>“is this specific agent allowed to do this specific thing, right now?”</strong> — ALLOW, BLOCK, or ASK A HUMAN. And it actually stops the action when the answer is no.</p>
+  </div>
+  <div class="metaline">
+    <div><div class="lbl">Stage</div><div class="v">Live · pre-revenue</div></div>
+    <div><div class="lbl">Users</div><div class="v p">5,000+</div></div>
+    <div><div class="lbl">Built</div><div class="v">Solo, in 2 months</div></div>
+    <div><div class="lbl">Team</div><div class="v">1 founder</div></div>
+    <div><div class="lbl">Category</div><div class="v">Agent infrastructure</div></div>
+  </div>
+  <div class="snum">01 / 18</div>
+</section>
+
+<!-- ============================================================ 02 SHIFT -->
+<section class="slide">
+  <div class="top"><span class="kicker">01 — The shift</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <h1>We gave AI hands and forgot the keys.</h1>
+    <div class="g2 mt5">
+      <div class="card flat">
+        <div class="lbl">Until recently</div>
+        <h2>AI wrote text. A human decided.</h2>
+        <p class="mt3">The model produced words, a person read them, and the person chose whether to act. The blast radius of a mistake was <strong>embarrassment</strong>.</p>
+      </div>
+      <div class="card accent">
+        <div class="lbl" style="color:var(--primary)">Today</div>
+        <h2>AI holds credentials. AI decides.</h2>
+        <p class="mt3">Agents act without a human in the loop. The blast radius is now <strong>your bank balance, your customer relationships and your compliance posture</strong>.</p>
+      </div>
+    </div>
+    <div class="row mt4">
+      <span class="chip sq">places orders</span>
+      <span class="chip sq">moves money</span>
+      <span class="chip sq">issues refunds</span>
+      <span class="chip sq">emails customers</span>
+      <span class="chip sq">writes to production</span>
+      <span class="chip sq">books travel</span>
+      <span class="chip sq">deletes files</span>
+    </div>
+  </div>
+  <div class="foot">Agents now do all of this with an employee-scoped credential.</div>
+  <div class="snum">02 / 18</div>
+</section>
+
+<!-- ============================================================ 03 PROBLEM -->
+<section class="slide">
+  <div class="top"><span class="kicker">02 — The problem</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <div class="split">
+      <div>
+        <h1 class="sm">A prompt is not a permission.</h1>
+        <p class="lede narrow">The typical production agent holds a long-lived credential with roughly an employee’s scope, because narrowing it was fiddly and nobody had time. Its limits live in the prompt, where they are advisory.</p>
+      </div>
+      <div class="code sm">SYSTEM_PROMPT = <span class="s">"""</span>
+<span class="s">You are a purchasing agent.</span>
+<span class="s">Never spend more than $100.</span>
+<span class="s">Always ask before refunding.</span>
+<span class="s">"""</span>
+
+<span class="c"># ↑ these are suggestions.</span>
+<span class="c"># nothing enforces them.</span>
+<span class="c"># nothing records the attempt.</span></div>
+    </div>
+    <div class="g3 mt5">
+      <div class="card">
+        <div class="lbl">Failure 1 — most common</div>
+        <h2>The confident mistake</h2>
+        <p class="mt3">Not attacked, not jailbroken — just wrong. Buys 500 units instead of 5 because a price was per-case. Refunds twice because the first had not settled. Almost entirely preventable with limits.</p>
+      </div>
+      <div class="card">
+        <div class="lbl">Failure 2 — adversarial</div>
+        <h2>The manipulated agent</h2>
+        <p class="mt3">Indirect prompt injection hides in a page, a PDF, a support ticket. Every published model-layer defence has been bypassed. You cannot fix this inside the thing being attacked.</p>
+      </div>
+      <div class="card">
+        <div class="lbl">Failure 3 — why pilots stall</div>
+        <h2>The accountability vacuum</h2>
+        <p class="mt3">What may this agent do, right now? What was refused? Who approved the exception, and can you prove the record is unedited? No answers means no production deployment.</p>
+      </div>
+    </div>
+  </div>
+  <div class="snum">03 / 18</div>
+</section>
+
+<!-- ============================================================ 04 WHY NOW -->
+<section class="slide">
+  <div class="top"><span class="kicker">03 — Why now</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <h1 class="sm">Every computing generation grows a permission layer. This one hasn’t.</h1>
+    <div class="tl">
+      <div class="c"><div class="bar"><b></b></div><div class="era">Mainframe</div><div class="who">RACF</div></div>
+      <div class="c"><div class="bar"><b></b></div><div class="era">Network</div><div class="who">Active Directory</div></div>
+      <div class="c"><div class="bar"><b></b></div><div class="era">Cloud</div><div class="who">IAM</div></div>
+      <div class="c"><div class="bar"><b></b></div><div class="era">SaaS identity</div><div class="who">Okta</div></div>
+      <div class="c now"><div class="bar"><b></b></div><div class="era">AI agents</div><div class="who">nothing</div></div>
+    </div>
+    <hr class="rule mt5">
+    <div class="g3 mt4">
+      <div class="card flat"><div class="lbl">Trigger 1</div><h2>Tool use got reliable</h2><p class="mt3">Teams now trust agents with real side effects, not drafts.</p></div>
+      <div class="card flat"><div class="lbl">Trigger 2</div><h2>Loops run unattended</h2><p class="mt3">Every major framework shipped agent loops with no human in the middle.</p></div>
+      <div class="card flat"><div class="lbl">Trigger 3</div><h2>The operator changed</h2><p class="mt3">Ops leads and finance managers now deploy agents — and carry the blame.</p></div>
+    </div>
+    <div class="callout mt4"><p>The gap opened about a year ago and widens every week as more agents get more keys. Permission layers get chosen once, and then they stay.</p></div>
+  </div>
+  <div class="snum">04 / 18</div>
+</section>
+
+<!-- ============================================================ 05 GAP -->
+<section class="slide">
+  <div class="top"><span class="kicker">04 — The gap</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body tight">
+    <h1 class="xs">Four categories point at this. None of them stop anything.</h1>
+    <table class="mt4">
+      <tr><th style="width:23%">Category</th><th style="width:34%">What it actually does</th><th>Why it does not solve this</th></tr>
+      <tr><td class="h">Cloud IAM<br><span class="mono" style="font-size:14px;color:var(--dim)">AWS · GCP · Okta · Entra</span></td><td>Authorises a principal against a resource, statically.</td><td>No per-action amount, no human-in-the-loop primitive, no approval that expires. “May call the Stripe API” is not “may refund up to $50”.</td></tr>
+      <tr><td class="h">Guardrails<br><span class="mono" style="font-size:14px;color:var(--dim)">filters · moderation · PII</span></td><td>Inspects text: toxic, off-topic, leaking, off-brand.</td><td>Says nothing about whether an action is permitted. A polite, PII-clean message that wires $40,000 to the wrong account passes every one.</td></tr>
+      <tr><td class="h">Observability<br><span class="mono" style="font-size:14px;color:var(--dim)">tracing · evals</span></td><td>Records what the agent did, afterwards.</td><td>Read-only and after the fact. It is the flight recorder, not the flight control. A complement, not a competitor.</td></tr>
+      <tr><td class="h">In-framework HITL<br><span class="mono" style="font-size:14px;color:var(--dim)">interrupts</span></td><td>Pauses the agent from inside the agent process.</td><td>The agent decides when to ask. The pause dies with the process. No record, no audit trail, no non-technical approver. Self-policing restated.</td></tr>
+    </table>
+    <div class="callout mt4"><p><strong>The gap:</strong> nothing external, deterministic and per-action that a non-engineer can configure, a non-engineer can approve from, that genuinely halts the action — and that produces evidence.</p></div>
+  </div>
+  <div class="snum">05 / 18</div>
+</section>
+
+<!-- ============================================================ 06 INSIGHT -->
+<section class="slide">
+  <div class="top"><span class="kicker">05 — The insight</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <h1 class="sm">The actor does not get to decide the limits of its own authority.</h1>
+    <p class="lede">Banks, hospitals, aviation and payment processors all separate three things that agent deployments currently fuse into a single model call.</p>
+    <div class="g3 mt5">
+      <div class="card flat"><div class="lbl">1 — Identity</div><h2>Who is asking</h2><p class="mt3">The agent, with its own key. Never shared, never ambiguous in the record.</p></div>
+      <div class="card accent"><div class="lbl" style="color:var(--primary)">2 — Policy</div><h2>What they may do</h2><p class="mt3">Decided <strong>elsewhere, by someone else</strong>, in a workspace the agent cannot read or write. This is the piece that is missing today.</p></div>
+      <div class="card flat"><div class="lbl">3 — Execution</div><h2>What happens</h2><p class="mt3">The side effect — but only after policy has answered.</p></div>
+    </div>
+    <div class="callout mt5"><p>A bank teller can be completely honest and still not be permitted to move ten million dollars alone. At scale you cannot verify intent. You can only <strong>constrain consequence</strong>.</p></div>
+  </div>
+  <div class="foot">The teller does not set their own withdrawal limit. The pilot does not grant their own clearance.</div>
+  <div class="snum">06 / 18</div>
+</section>
+
+<!-- ============================================================ 07 PRODUCT -->
+<section class="slide">
+  <div class="top"><span class="kicker">06 — The product</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <h1>One call. Three answers.</h1>
+    <div class="split mt5">
+      <div class="code">POST <span class="k">/api/v1/authorize</span>
+X-Vexen-Key: <span class="c">&lt;the agent's own key&gt;</span>
+
+{
+  <span class="k">"resource"</span>:    <span class="s">"shopping"</span>,
+  <span class="k">"action"</span>:      <span class="s">"purchase"</span>,
+  <span class="k">"amount"</span>:      <span class="n">742.50</span>,
+  <span class="k">"currency"</span>:    <span class="s">"USD"</span>,
+  <span class="k">"resource_id"</span>: <span class="s">"order-4471"</span>
+}</div>
+      <div class="stack">
+        <div class="card" style="padding:20px 24px">
+          <span class="chip allow"><span class="dot"></span>allow</span>
+          <p class="mt3">Proceed. Recorded with the full evaluation trace.</p>
+        </div>
+        <div class="card" style="padding:20px 24px;border-color:hsl(38 92% 50% / .34)">
+          <span class="chip appr"><span class="dot"></span>approval_required</span>
+          <p class="mt3">Stop. A named human has been asked, and here is the approval id.</p>
+        </div>
+        <div class="card" style="padding:20px 24px">
+          <span class="chip block"><span class="dot"></span>block</span>
+          <p class="mt3">Refused, with a reason in language the operator can act on.</p>
+        </div>
+      </div>
+    </div>
+    <div class="row mt5">
+      <span class="chip sq">machine-readable reason code</span>
+      <span class="chip sq">human-readable reason</span>
+      <span class="chip sq">full 13-step trace</span>
+      <span class="chip sq">per-agent hashed keys</span>
+    </div>
+  </div>
+  <div class="snum">07 / 18</div>
+</section>
+
+<!-- ============================================================ 08 ENGINE -->
+<section class="slide">
+  <div class="top"><span class="kicker">07 — How it decides</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <h1 class="sm">Deterministic by design. No model in the enforcement path.</h1>
+    <p class="lede">A pure function: no I/O, no inference. Thirteen ordered steps, each one recorded in the trace.</p>
+    <div class="steps mt4">
+      <div class="step"><div class="i">01</div><div class="t">Verify agent identity</div></div>
+      <div class="step"><div class="i">02</div><div class="t">Verify agent is active</div></div>
+      <div class="step"><div class="i">03</div><div class="t">Verify request is authenticated</div></div>
+      <div class="step"><div class="i">04</div><div class="t">Validate request shape</div></div>
+      <div class="step"><div class="i">05</div><div class="t">Permission exists at all</div></div>
+      <div class="step"><div class="i">06</div><div class="t">Permission not expired</div></div>
+      <div class="step"><div class="i">07</div><div class="t">Resource restrictions</div></div>
+      <div class="step"><div class="i">08</div><div class="t">Action restrictions</div></div>
+      <div class="step"><div class="i">09</div><div class="t">Numeric limits</div></div>
+      <div class="step"><div class="i">10</div><div class="t">Sensitive-resource rules</div></div>
+      <div class="step"><div class="i">11</div><div class="t">Workspace policy</div></div>
+      <div class="step"><div class="i">12</div><div class="t">Human-approval requirement</div></div>
+      <div class="step last"><div class="i">13</div><div class="t">Calculate risk → decision</div></div>
+      <div class="step" style="background:transparent;border-style:dashed"><div class="i" style="color:var(--dim)">↳</div><div class="t" style="color:var(--muted);font-size:14.5px">the trace <em>is</em> the explanation</div></div>
+      <div class="step" style="background:transparent;border-style:dashed"><div class="i" style="color:var(--dim)">↳</div><div class="t" style="color:var(--muted);font-size:14.5px">console, audit &amp; SDK error agree</div></div>
+    </div>
+    <div class="g2 mt5">
+      <div class="callout"><p><strong>Default-deny.</strong> The only path to ALLOW is an explicit grant that survives all thirteen. Same input, same answer, every time — the only kind of gate you can certify.</p></div>
+      <div class="card warn"><h2 style="color:var(--approval)">The AI writes rules. The AI never enforces them.</h2><p class="mt3">You type “any purchase over $100 needs a person to approve it”; a model turns it into a schema-validated rule. You cannot certify a gate that might answer differently tomorrow.</p></div>
+    </div>
+  </div>
+  <div class="snum">08 / 18</div>
+</section>
+
+<!-- ============================================================ 09 APPROVALS -->
+<section class="slide">
+  <div class="top"><span class="kicker">08 — The hard part</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <h1 class="sm">Approvals that actually hold.</h1>
+    <p class="lede">Most human-in-the-loop implementations get one or two of these five. Missing any single one gives you an approval that can be replayed, escalated or forged — <strong>worse than no approval at all</strong>, because now a signed-looking record says a human agreed.</p>
+    <div class="g5 mt5">
+      <div class="card" style="padding:22px"><div class="lbl">01</div><h2>Single-use</h2><p class="mt3" style="font-size:16px">Consumed the moment it is spent. No replay, ever.</p></div>
+      <div class="card" style="padding:22px"><div class="lbl">02</div><h2>Short-lived</h2><p class="mt3" style="font-size:16px">30 minutes by default. Yesterday’s yes authorises nothing today.</p></div>
+      <div class="card" style="padding:22px"><div class="lbl">03</div><h2>Atomically claimed</h2><p class="mt3" style="font-size:16px">Two concurrent requests can never both spend it.</p></div>
+      <div class="card" style="padding:22px"><div class="lbl">04</div><h2>Scope-bound</h2><p class="mt3" style="font-size:16px">Same permission, same order, same amount <strong>to the cent</strong>.</p></div>
+      <div class="card" style="padding:22px"><div class="lbl">05</div><h2>Zero client trust</h2><p class="mt3" style="font-size:16px">State loads server-side. Caller claims are ignored.</p></div>
+    </div>
+    <div class="row mt5">
+      <span class="chip sq">verified: replay refused</span>
+      <span class="chip sq">verified: amount escalation refused</span>
+      <span class="chip sq">verified: cross-order reuse refused</span>
+      <span class="chip sq">verified: forged token refused</span>
+    </div>
+  </div>
+  <div class="snum">09 / 18</div>
+</section>
+
+<!-- ============================================================ 10 APPROVAL UX -->
+<section class="slide">
+  <div class="top"><span class="kicker">09 — For the person accountable</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <div class="split">
+      <div>
+        <h1 class="sm">Two taps. No login. Fifteen seconds.</h1>
+        <p class="lede narrow">A control humans find annoying gets switched off, and a switched-off control protects nobody. So convenience is treated as a security requirement, not a nicety.</p>
+        <div class="card warn mt4">
+          <div class="lbl" style="color:var(--approval)">The subtlety that shaped the design</div>
+          <h2 class="mt3" style="color:var(--approval)">A link that acts on GET is a vulnerability.</h2>
+          <p class="mt3">Mail providers and corporate link scanners fetch every URL in a message to check it. If Approve happened on GET, <strong>your security scanner would approve the $40,000 purchase before you opened the email</strong>. So the GET is strictly read-only and the decision requires a deliberate POST.</p>
+        </div>
+        <div class="row mt4">
+          <span class="chip sq">HMAC-SHA256, domain-separated</span>
+          <span class="chip sq">ids only — never a session</span>
+          <span class="chip sq">24-hour expiry</span>
+          <span class="chip sq">minted per recipient</span>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;padding-top:8px">
+        <div class="phone">
+          <div class="hd">
+            <span class="wm"><b>vexen</b></span>
+            <span class="chip appr" style="font-size:12px;padding:6px 11px"><span class="dot"></span>waiting</span>
+          </div>
+          <div class="lbl">Purchasing agent · Northwind</div>
+          <div class="amt">$740.00</div>
+          <div class="meta">supplier &nbsp;<b>Kraft Supply Co.</b><br>order &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>order-4471</b><br>agent &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>restock-01</b></div>
+          <div class="why">Stopped by your rule: purchases over $200 need a person.</div>
+          <div class="btns">
+            <div class="btn ok">Approve once</div>
+            <div class="btn no">Refuse</div>
+          </div>
+          <p class="mono mt3" style="font-size:13px;color:var(--dim);line-height:1.5">One tap to confirm. Valid for this order, this amount, once.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="snum">10 / 18</div>
+</section>
+
+<!-- ============================================================ 11 AUDIT -->
+<section class="slide">
+  <div class="top"><span class="kicker">10 — Evidence</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <h1 class="sm">A record you can hand to someone who does not trust you.</h1>
+    <table class="mt4">
+      <tr><th style="width:15%">Decision</th><th style="width:20%">Agent</th><th style="width:17%">Action</th><th style="width:12%">Amount</th><th style="width:16%">Approved by</th><th>Integrity</th></tr>
+      <tr><td><span class="chip allow" style="font-size:12px;padding:6px 11px"><span class="dot"></span>allow</span></td><td class="mono">restock-01</td><td class="mono">shopping.purchase</td><td class="mono">$182.00</td><td class="mono" style="color:var(--dim)">— rule</td><td class="mono" style="color:var(--allow)">✓ 9f2c…a41b</td></tr>
+      <tr><td><span class="chip appr" style="font-size:12px;padding:6px 11px"><span class="dot"></span>approved</span></td><td class="mono">restock-01</td><td class="mono">shopping.purchase</td><td class="mono">$740.00</td><td class="mono">a.morgan</td><td class="mono" style="color:var(--allow)">✓ 3d81…c07e</td></tr>
+      <tr><td><span class="chip block" style="font-size:12px;padding:6px 11px"><span class="dot"></span>block</span></td><td class="mono">support-02</td><td class="mono">data.export</td><td class="mono" style="color:var(--dim)">—</td><td class="mono" style="color:var(--dim)">— policy</td><td class="mono" style="color:var(--allow)">✓ 77ae…1f93</td></tr>
+      <tr><td><span class="chip block" style="font-size:12px;padding:6px 11px"><span class="dot"></span>block</span></td><td class="mono">restock-01</td><td class="mono">payments.credential</td><td class="mono" style="color:var(--dim)">—</td><td class="mono" style="color:var(--dim)">— policy</td><td class="mono" style="color:var(--allow)">✓ b520…8ddc</td></tr>
+    </table>
+    <div class="g2 mt5">
+      <div class="callout"><p><strong>SHA-256 over every event’s identifying fields.</strong> A verification pass recomputes each hash and names the rows that changed, if any.</p></div>
+      <div class="card flat"><p style="font-size:19px;color:var(--fg)">So “our agent did not do that” and “a human approved this on the 14th” become <strong>checkable claims</strong> rather than assertions. This is the feature that comes up first in every serious conversation.</p></div>
+    </div>
+  </div>
+  <div class="snum">11 / 18</div>
+</section>
+
+<!-- ============================================================ 12 ACTIVATION -->
+<section class="slide">
+  <div class="top"><span class="kicker">11 — Activation</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <div class="split">
+      <div>
+        <h1 class="sm">Governed in under a minute.</h1>
+        <p class="lede narrow">Governance software dies at the blank page. Nobody knows which of 67 permissions their shopping agent needs, so they grant everything — and <strong>false assurance is worse than none</strong>.</p>
+        <p class="lede narrow">So the first experience is a correctly-configured agent you can then relax, not an empty form you will fill in wrong. Defaults are the product, and this is the single biggest lever on activation.</p>
+      </div>
+      <div class="card accent" style="padding:38px 40px">
+        <div class="stat">
+          <div class="lbl">Ready-made agent configurations</div>
+          <div class="n p mt3">10,639</div>
+          <div class="k">55 archetypes × 28 industries × 7 capability tiers</div>
+        </div>
+        <hr class="rule mt4">
+        <div class="mt4 stack" style="gap:14px">
+          <div><span class="chip sq mono">search “refund”</span></div>
+          <div><span class="chip sq mono">deploy in one click</span></div>
+          <div><span class="chip allow sq">narrowed · capped · thresholded</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="g4 mt5">
+      <div class="card flat" style="padding:22px"><div class="stat"><div class="n">67</div><div class="k">permissions in business language, not endpoints</div></div></div>
+      <div class="card flat" style="padding:22px"><div class="stat"><div class="n">18</div><div class="k">categories, from Payments to Healthcare</div></div></div>
+      <div class="card flat" style="padding:22px"><div class="stat"><div class="n">10</div><div class="k">flagged sensitive, with stricter defaults</div></div></div>
+      <div class="card flat" style="padding:22px"><div class="stat"><div class="n">4</div><div class="k">server-side roles; approvers cannot edit policy</div></div></div>
+    </div>
+  </div>
+  <div class="snum">12 / 18</div>
+</section>
+
+<!-- ============================================================ 13 IN PRACTICE -->
+<section class="slide">
+  <div class="top"><span class="kicker">12 — In practice</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <h1 class="sm">$740 of packaging, at three in the morning.</h1>
+    <p class="lede">A three-person e-commerce company. The purchasing agent holds a payment key and a supplier login.</p>
+    <div class="g4 mt5">
+      <div class="card"><div class="lbl">Before</div><h2>Nobody is checking</h2><p class="mt3">The agent does whatever the model decides overnight. The founder finds out from her bank.</p></div>
+      <div class="card"><div class="lbl">Setup — 60 seconds</div><h2>Deploy &amp; one rule</h2><p class="mt3">One click from the library: up to $200, three approved suppliers, $2,000 daily cap. She types “never let this agent touch payment credentials”.</p></div>
+      <div class="card"><div class="lbl">Integration — one line</div><h2>Guard the function</h2><p class="mt3">Her engineer adds a decorator above the function that actually places the order. If Vexen says no, it never runs.</p></div>
+      <div class="card accent"><div class="lbl" style="color:var(--primary)">3:04am</div><h2>Halted, then allowed once</h2><p class="mt3">$740 attempt stops. Her phone asks. She taps approve. It goes through — once, that amount, that order. Replay tomorrow is refused.</p></div>
+    </div>
+    <div class="callout mt5"><p>Nothing in that story requires her to understand an API key, and nothing in it requires her to <strong>trust</strong> the agent. Two weeks later her accountant asks about the $740, and she hands over a record with a hash proving nobody edited it.</p></div>
+  </div>
+  <div class="snum">13 / 18</div>
+</section>
+
+<!-- ============================================================ 14 TRACTION -->
+<section class="slide">
+  <div class="top"><span class="kicker">13 — Traction</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <h1 class="sm">Built solo in two months. Live, and past five thousand users.</h1>
+    <div class="g4 mt5">
+      <div class="card"><div class="stat"><div class="lbl">Users</div><div class="n p mt3">5,000+</div><div class="k">no paid acquisition, content-led</div></div></div>
+      <div class="card"><div class="stat"><div class="lbl">Build time</div><div class="n mt3">2 mo</div><div class="k">one person, end to end, deployed</div></div></div>
+      <div class="card"><div class="stat"><div class="lbl">Regression suite</div><div class="n mt3">55/55</div><div class="k">auth, tenant isolation, replay refusal, role guards</div></div></div>
+      <div class="card"><div class="stat"><div class="lbl">Independent pass</div><div class="n mt3">110/110</div><div class="k">backend checks, no critical defects</div></div></div>
+    </div>
+    <div class="split mt5">
+      <div class="card flat">
+        <div class="lbl">What users keep asking for</div>
+        <p class="mt3" style="font-size:19px;color:var(--fg)">TypeScript · native framework guards · <strong>“can I stop the agent bypassing this at all?”</strong></p>
+        <p class="mt3">That last one is a request for the credential broker. Users are pulling the product toward the harder, more defensible version of itself.</p>
+      </div>
+      <div class="card" style="border-color:hsl(355 78% 56% / .3)">
+        <div class="lbl" style="color:var(--block)">Not done — stated plainly</div>
+        <p class="mt3">No revenue yet. Python-only SDK. One workspace per account. No SSO, SCIM or SOC 2. The credential broker is designed but unbuilt.</p>
+        <p class="mt3" style="color:var(--dim)">A security product that overstates its readiness is the exact thing we argue against.</p>
+      </div>
+    </div>
+  </div>
+  <div class="snum">14 / 18</div>
+</section>
+
+<!-- ============================================================ 15 MARKET -->
+<section class="slide">
+  <div class="top"><span class="kicker">14 — Market &amp; model</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <div class="split">
+      <div>
+        <h1 class="sm">Bought once. Removed almost never.</h1>
+        <p class="lede narrow">Approver seats plus decision volume, because value scales with the number of consequential decisions we sit in front of.</p>
+        <table class="mt4">
+          <tr><th style="width:26%">Tier</th><th>Who, and what unlocks</th></tr>
+          <tr><td class="h">Free</td><td>One workspace, monthly decision allowance, <strong>full audit trail</strong>. The acquisition engine.</td></tr>
+          <tr><td class="h">Team</td><td>Per approver seat + volume. First revenue; the initial wedge.</td></tr>
+          <tr><td class="h">Business</td><td>SSO, retention, policy bundles, residency. Real budget.</td></tr>
+          <tr><td class="h">Platform</td><td>API-metered, white-label. Volume without headcount.</td></tr>
+        </table>
+      </div>
+      <div class="stack">
+        <div class="card accent">
+          <div class="lbl" style="color:var(--primary)">Bottom-up, 2028 — our estimate, not an analyst report</div>
+          <p class="mt3" style="font-size:20px;color:var(--fg)">~50,000 companies × ~$25k ACV ≈ <strong>$1.25B</strong></p>
+          <p class="mt3">If permissions become table stakes rather than a choice — the way nobody ships a cloud workload without IAM — the population is ~500,000 and the market is <strong>$10B+</strong>.</p>
+        </div>
+        <div class="card flat">
+          <div class="lbl">Anchors</div>
+          <p class="mt3">IAM is a multi-tens-of-billions market; GRC tooling is larger. Agent authorization is the agent-native slice of two existing budgets — so we never have to argue the category deserves money.</p>
+        </div>
+        <div class="callout"><p><strong>Zero I/O and no model call in the decision path.</strong> Marginal cost per decision is near nil — gross margin looks like infrastructure, not an LLM wrapper.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="snum">15 / 18</div>
+</section>
+
+<!-- ============================================================ 16 FOUNDER -->
+<section class="slide">
+  <div class="top"><span class="kicker">15 — Founder</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body tight">
+    <h1 class="xs">Sixth product. Over 100,000 users before this one.</h1>
+    <p class="lede" style="margin-top:18px">Every one built, shipped and distributed with no marketing budget. Distribution is what most technical founders lack; it is the thing I have repeatedly done.</p>
+    <table class="compact mt3">
+      <tr><th style="width:20%">Product</th><th style="width:13%">Users</th><th>What it does, and why it is relevant</th></tr>
+      <tr><td class="h">HealthLens</td><td class="mono" style="color:var(--primary)">70,000+</td><td>AI wellness platform — health data in one place, food tracking, facial and voice analysis.</td></tr>
+      <tr><td class="h">AI-Namo</td><td class="mono" style="color:var(--primary)">20,000+</td><td>AI government-document verification, <strong>adopted by a local government</strong> for fraud prevention — an institution depending on my software to make a trust decision.</td></tr>
+      <tr><td class="h">GreenGuide</td><td class="mono" style="color:var(--primary)">10,000+</td><td>Agricultural copilot: plant health diagnosis, variety ID, contamination risk.</td></tr>
+      <tr><td class="h">CerebroAegis</td><td class="mono" style="color:var(--primary)">5,000+</td><td>Health and safety platform turning complex guidance into actionable steps.</td></tr>
+      <tr><td class="h">The1550Formula</td><td class="mono" style="color:var(--allow)">~$70k/mo</td><td>COO of an AI-first test-prep company, 1,000+ students, ~200 point average gain — where I learned the distance between a signup and a customer.</td></tr>
+    </table>
+    <div class="g2 mt3">
+      <div class="card flat" style="padding:20px 24px"><div class="lbl">The through-line</div><p class="mt3" style="font-size:17px">Every product is an interpreter between a person and complex information generated about them. Vexen interprets an agent’s intended action for the person accountable — then does what none of the others could: <strong>stops it</strong>.</p></div>
+      <div class="card" style="padding:20px 24px;border-color:hsl(355 78% 56% / .3)"><div class="lbl" style="color:var(--block)">Where I am weak</div><p class="mt3" style="font-size:17px">I have never sold an infrastructure security product through an enterprise procurement cycle. That is hire #1, and I would rather name it than have you find it.</p></div>
+    </div>
+  </div>
+  <div class="snum">16 / 18</div>
+</section>
+
+<!-- ============================================================ 17 ASK -->
+<section class="slide">
+  <div class="top"><span class="kicker">16 — The ask</span><span class="wm"><b>vexen</b></span></div>
+  <div class="body">
+    <h1 class="sm">Raising a pre-seed to make bypassing impossible.</h1>
+    <p class="lede">Today the guard is a check an agent chooses to make. The complete version brokers short-lived, scoped credentials, so an agent <strong>physically cannot</strong> exceed its authority.</p>
+    <div class="g3 mt4">
+      <div class="card" style="padding:20px 24px"><div class="lbl">Use of funds — 1</div><h2>Two engineers</h2><p class="mt3">The credential broker, a TypeScript SDK, and native guards for the main agent frameworks. Ideally out of IAM, fraud or payments.</p></div>
+      <div class="card" style="padding:20px 24px"><div class="lbl">Use of funds — 2</div><h2>First GTM hire</h2><p class="mt3">Someone who has sold an infrastructure control to a mid-market ops or finance buyer. The honest gap in my skill set.</p></div>
+      <div class="card" style="padding:20px 24px"><div class="lbl">Use of funds — 3</div><h2>Trust &amp; compliance</h2><p class="mt3">External security review — a security product never attacked by a stranger is an untested claim — then SOC 2, SSO and SCIM.</p></div>
+    </div>
+    <div class="split mt4">
+      <div class="card flat" style="padding:20px 24px">
+        <div class="lbl">First 90 days</div>
+        <p class="mt3" style="font-size:16.5px;line-height:1.5"><strong>1–4:</strong> sit with ten teams running agents in production and watch them configure it unaided. Ship the TypeScript SDK.<br>
+        <strong>5–8:</strong> multi-workspace, framework guards, begin the external security review — and publish what it finds.<br>
+        <strong>9–12:</strong> credential broker v1 live with a design partner. Start SOC 2 Type I.</p>
+      </div>
+      <div class="card accent" style="padding:20px 24px">
+        <div class="lbl" style="color:var(--primary)">What I want beyond capital</div>
+        <p class="mt3" style="font-size:18px;color:var(--fg)">Two or three introductions to ops or finance leaders inside portfolio companies already running agents in production.</p>
+        <p class="mt3" style="font-size:16.5px">Not necessarily as customers — as the people who will tell me in ten minutes whether the approval flow survives a real approval chain.</p>
+      </div>
+    </div>
+  </div>
+  <div class="snum">17 / 18</div>
+</section>
+
+<!-- ============================================================ 18 CLOSE -->
+<section class="slide end">
+  <div class="top"><span class="kicker">Vexen</span><span class="wm"><b>vexen</b> · Control AI.</span></div>
+  <div class="body">
+    <h1>Agents already have the keys.<br><span>Somebody has to hold the lock.</span></h1>
+    <div class="row mt5" style="gap:12px">
+      <span class="chip allow"><span class="dot"></span>allow</span>
+      <span class="chip appr"><span class="dot"></span>approval_required</span>
+      <span class="chip block"><span class="dot"></span>block</span>
+    </div>
+    <div class="metaline mt5" style="border-top:1px solid var(--border);padding-top:26px">
+      <div><div class="lbl">Try it — live product</div><div class="v mono" style="font-size:16px;color:var(--primary)">action-guard-1.preview.emergentagent.com</div></div>
+      <div><div class="lbl">Watch it — narrated demo</div><div class="v mono" style="font-size:16px">youtu.be/V5SaKRhMmcM</div></div>
+      <div><div class="lbl">Read it — technical doc</div><div class="v mono" style="font-size:16px">/api/download/supporting-document</div></div>
+    </div>
+  </div>
+  <div class="foot">The fastest evaluation: deploy an agent, set the threshold to $10, then try to make it spend $50.</div>
+  <div class="snum">18 / 18</div>
+</section>
+
+</body>
+</html>
