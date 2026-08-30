@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 ROOT = Path(__file__).parent
@@ -118,6 +118,43 @@ async def health():
         "permissions": len(PERMISSION_CATALOG),
         "agent_templates": len(AGENT_TEMPLATES),
     }
+
+
+# --------------------------------------------------------------------------- #
+# Downloads. The same files are served statically for in-page playback; these
+# routes force a save-to-disk instead of opening in the browser.
+# --------------------------------------------------------------------------- #
+PUBLIC_DIR = Path(__file__).resolve().parent.parent / "frontend" / "public"
+
+DOWNLOADS = {
+    "demo-video": ("demo/vexen-demo.mp4", "vexen-demo.mp4", "video/mp4"),
+    "demo-video-webm": ("demo/vexen-demo.webm", "vexen-demo.webm", "video/webm"),
+    "supporting-document": (
+        "docs/vexen-supporting-document.pdf",
+        "Vexen-Supporting-Document.pdf",
+        "application/pdf",
+    ),
+}
+
+
+@app.get("/api/download/{item}")
+async def download(item: str):
+    entry = DOWNLOADS.get(item)
+    if not entry:
+        return JSONResponse(status_code=404, content={"detail": "Nothing to download here."})
+    relative, filename, media_type = entry
+    path = PUBLIC_DIR / relative
+    if not path.is_file():
+        return JSONResponse(status_code=404, content={"detail": "That file is not available."})
+    return FileResponse(
+        path,
+        media_type=media_type,
+        filename=filename,
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "public, max-age=3600",
+        },
+    )
 
 
 app.include_router(auth_router)
