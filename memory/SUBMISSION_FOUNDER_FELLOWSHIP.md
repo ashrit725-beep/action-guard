@@ -414,3 +414,30 @@ you find these gaps in this paragraph than in a diligence call.
 One last thing, and it is the one I would most like you to weigh. Every product
 I have built so far was built in the gaps around everything else. Vexen is the
 first one I want to do as the only thing I do.
+
+---
+
+## 1000-CHARACTER VERSIONS (verified counts, use for capped form fields)
+
+### Q: Tell us more about the team  (994 / 1000)
+
+It is one person: me. No co-founder, no employees. I would rather say that plainly than dress a solo project up as a team.
+
+Have I worked with others? Yes. As COO of The1550Formula I ran ops with a founder and small team to ~$70,000/month and 1,000+ students. I founded PythonPal, a nonprofit that has taught 100+ students, so I have recruited and led volunteers, and I run HorizonSTEM workshops for 150 more.
+
+Why this team now: Vexen is one tightly-coupled guarantee - engine, approval invariants, SDK and audit must agree, because a gap between any two is a vulnerability. Holding that in one head is an advantage now. It is also my sixth product; the previous five reached 100,000+ users with no marketing budget, so "will he ship" is well evidenced.
+
+The gap: I have never sold security through enterprise procurement. Hire 1: a founding engineer from IAM, fraud or payments to own the credential broker. Hire 2: GTM, to run design partners. No formal advisors yet - what I most want here.
+
+### Q: Anything else we should know? (996 / 1000)
+
+Three things.
+
+1. The version I care about. The small Vexen is a B2B tool that stops agents overspending. The version I want is an open standard: every team is inventing agent permissions differently, so nothing carries across systems and a regulator has no vocabulary to point at. Identity got OAuth; payments got card network rules; agent authority has nothing, and that window is open now. I would rather build the reference implementation of an open standard than own a closed one.
+
+2. How to judge me. Not the deck. Point a real agent at it and confirm the blocked side effect never happened. Try to replay, escalate or forge an approval. Hand the console to a non-engineer. Alter an audit row and watch the integrity check catch it. Take the service offline and confirm the guarded call refuses to run.
+
+3. The honest ledger. No revenue, Python-only SDK, no SOC 2, credential broker designed but unbuilt. Every product before this was built in the gaps. Vexen is the first I want full-time.
+
+Both strings are held verbatim in /app/deck/check_fields.py as team_1000 and
+anything_else_v2 - run `python /app/deck/check_fields.py` to re-verify counts.

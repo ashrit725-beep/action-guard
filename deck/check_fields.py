@@ -4,6 +4,22 @@
 FIELDS = {
     "one_liner": (100, """The permission layer for AI agents — for any team whose agents can spend money on their behalf."""),
 
+    "team_1000": (1000, """It is one person: me. No co-founder, no employees. I would rather say that plainly than dress a solo project up as a team.
+
+Have I worked with others? Yes. As COO of The1550Formula I ran ops with a founder and small team to ~$70,000/month and 1,000+ students. I founded PythonPal, a nonprofit that has taught 100+ students, so I have recruited and led volunteers, and I run HorizonSTEM workshops for 150 more.
+
+Why this team now: Vexen is one tightly-coupled guarantee - engine, approval invariants, SDK and audit must agree, because a gap between any two is a vulnerability. Holding that in one head is an advantage now. It is also my sixth product; the previous five reached 100,000+ users with no marketing budget, so "will he ship" is well evidenced.
+
+The gap: I have never sold security through enterprise procurement. Hire 1: a founding engineer from IAM, fraud or payments to own the credential broker. Hire 2: GTM, to run design partners. No formal advisors yet - what I most want here."""),
+
+    "anything_else_v2": (1000, """Three things.
+
+1. The version I care about. The small Vexen is a B2B tool that stops agents overspending. The version I want is an open standard: every team is inventing agent permissions differently, so nothing carries across systems and a regulator has no vocabulary to point at. Identity got OAuth; payments got card network rules; agent authority has nothing, and that window is open now. I would rather build the reference implementation of an open standard than own a closed one.
+
+2. How to judge me. Not the deck. Point a real agent at it and confirm the blocked side effect never happened. Try to replay, escalate or forge an approval. Hand the console to a non-engineer. Alter an audit row and watch the integrity check catch it. Take the service offline and confirm the guarded call refuses to run.
+
+3. The honest ledger. No revenue, Python-only SDK, no SOC 2, credential broker designed but unbuilt. Every product before this was built in the gaps. Vexen is the first I want full-time."""),
+
     "description": (800, """AI agents now hold real credentials. They spend money, refund customers, email clients and delete files. Their limits live in prompts — "never spend more than $100" — which are suggestions, not permissions. Nothing external checks them, and when something goes wrong nobody can answer "who allowed this?" in under an hour.
 
 Vexen is the permission and approval layer. One API call answers "is this specific agent allowed to do this specific thing, right now?" and returns ALLOW, BLOCK or ASK A HUMAN — deterministically, with no model in the enforcement path. If a human is needed the agent halts and the accountable person approves in two taps on their phone, no login. Every decision is written to a hash-verified audit record.
