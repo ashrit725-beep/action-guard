@@ -10,6 +10,13 @@
 - Provide a **massive Agent Template Library (10,000+ templates)** with search/filter and one-click deploy.
 - Include public marketing pages: **Landing** (with embedded demo video), **Contact**, plus a **Developer API** page.
 
+**Objective (Submission packaging): “answers must fit exact length constraints”**
+- Maintain `/app/memory/SUBMISSION.md` with:
+  - Q1 tweet answer at ~295 characters
+  - Q2 proposal answer at ~32,750 characters (within acceptable tolerance)
+  - counts verified by tooling (scripted count, not eyeballed)
+  - include a paste-ready attachments list
+
 **Objective (Phase 6/7): “100,000 devices + real app at scale”**
 - Ensure the app behaves like a **real enforcement layer**, not a simulator:
   - approvals are **single-use**, **short-lived**, and **atomically claimed** (no replay)
@@ -51,11 +58,26 @@
 - Ensure the Landing demo video modal doesn’t show a false “cannot play” fallback when the browser can play at least one provided format.
 - Provide a safe fallback UX for codec-limited environments.
 
-**Objective (Phase 12–14): “Enterprise operations: alerts + phone approvals + teams”**
+**Objective (Phases 12–14): “Enterprise operations: alerts + phone approvals + teams”**
 - **Email alerts**: notify the right people the moment an agent is paused.
 - **Approve-by-phone**: approvals can be decided from a phone without opening the console.
 - **Team seats**: invite teammates and enforce roles server-side.
 - **Browser push**: optional device notifications for approvals.
+
+**Objective (Phase 15): “Demo video v2: enterprise-grade, captioned, covers newest features”**
+- Rebuild the demo video to be **“very very good”**:
+  - 1080p master (plus WebM)
+  - chapter structure and burned-in captions/cards (watchable muted)
+  - explicitly demonstrates the newest differentiators:
+    - email alert + one-tap phone approval
+    - SDK fail-closed genuine enforcement semantics
+    - team seats + roles
+
+**Objective (Phase 16): “Supporting document PDF”**
+- Produce a polished, brand-consistent **supporting document PDF** for applications/sales:
+  - A4, selectable text, no clipped/overlapping layout, consistent headers/footers
+  - Uses real screenshots from the running app
+  - Exported and served from a stable public URL
 
 ---
 
@@ -84,7 +106,7 @@
 
 ---
 
-### Phase 4 — Demo Video
+### Phase 4 — Demo Video (v1)
 **Status:** ✅ Completed and verified.
 
 ---
@@ -136,59 +158,21 @@
 
 #### Phase 12A — Mail plumbing (backend)
 **Status:** ✅ Completed.
-- New `/app/backend/vexen/mailer.py`:
-  - Gmail SMTP sender using `aiosmtplib`
-  - STARTTLS on `smtp.gmail.com:587` (465 implicit TLS fallback)
-  - multipart (plain + HTML), friendly From (`Vexen Security`), Reply-To, Message-ID, Auto-Submitted
-  - strips cosmetic spaces from Gmail app passwords
-- Mongo `email_outbox`:
-  - `{id, org_id, user_id, to, subject, html, text, kind, status, attempts, last_error, created_at, next_attempt_at, sent_at}`
-  - indexes: status/next_attempt_at/created_at; org_id/created_at; id unique; dedupe_key unique (partial)
-- Background drain worker started in FastAPI lifespan:
-  - atomic claim (`find_one_and_update`) → cannot send twice
-  - retries capped at 5 with exponential backoff up to 30m
-  - terminal errors: auth failures (535/534) / authentication exceptions
-  - spacing: 0.6s between sends to stay under Gmail quotas
-  - request paths never touch SMTP
 
 #### Phase 12B — Signed one-tap approval links (secure + scan-safe)
 **Status:** ✅ Completed.
-- New `/app/backend/vexen/links.py`:
-  - HMAC-SHA256 signed tokens w/ domain separation (`vexen-link-v1:` + `JWT_SECRET`)
-  - carries org id + approval id + **recipient user id**; TTL 24h
-  - verify returns None (never raises, never explains)
-- New `/app/backend/vexen/routes_public.py`:
-  - `GET /api/public/approvals/{token}` is read-only preview
-  - `POST /api/public/approvals/{token}/decision` decides (approve/deny)
-  - **Security design**: GET never mutates (scan-safe against link-prefetch)
-  - reuses the same decision logic as console and re-evaluates request so enforcement invariants remain real
 
 #### Phase 12C — Recipient selection + per-person Settings
 **Status:** ✅ Completed.
-- `NotificationPrefs` extended:
-  - `email_approval_requests` (default on)
-  - `email_blocked_actions` (default off)
-  - `email_team_activity` (default on)
-- Recipients:
-  - membership role in `(owner, admin, approver)` AND user’s own toggle enabled
 
 #### Phase 12D — Frontend approve-by-link page
 **Status:** ✅ Completed.
-- New public page `/approve/:token` (`/app/frontend/src/pages/ApproveByLink.js`)
-  - mobile-first, large touch targets, optional note
-  - all states: loading, pending, approved/refused, already decided, expired/invalid
-  - light/dark supported
 
 #### Phase 12E — Hook into hot path (queue only)
 **Status:** ✅ Completed.
-- `service.evaluate_and_record(...)` now accepts `base_url`
-- callers pass `public_base_url(request)` so links are publicly reachable
-- approvals queue email into outbox only (non-blocking)
 
 #### Phase 12 Verification Evidence
-- Targeted suite: **22/22** checks passed, including a **real Gmail delivery**.
-- Security: GET does not approve; tampered token returns 404; token is single-use; decision recorded to the correct recipient.
-- Regression: global smoke still green.
+**Status:** ✅ Completed.
 
 ---
 
@@ -197,60 +181,15 @@
 
 #### Phase 13A — Roles model + enforcement
 **Status:** ✅ Completed.
-- Roles:
-  - `owner`: everything
-  - `admin`: manage agents/policies/keys; invite approver/viewer; cannot manage members
-  - `approver`: approve/deny + read-only
-  - `viewer`: read-only
-- `Principal` now includes `role`; role guards added:
-  - `editor_principal` (owner/admin)
-  - `approver_principal` (owner/admin/approver)
-  - `owner_principal` (owner only)
-- Applied to **18** mutating endpoints across agents, governance, org settings, simulator, approvals.
 
 #### Phase 13B — Invitations
 **Status:** ✅ Completed.
-- New `/app/backend/vexen/routes_team.py`:
-  - `GET /api/team`
-  - `POST /api/team/invites`
-  - `POST /api/team/invites/{id}/resend`
-  - `DELETE /api/team/invites/{id}`
-  - `PATCH /api/team/members/{user_id}` (owner only)
-  - `DELETE /api/team/members/{user_id}` (owner only; revokes sessions)
-  - public:
-    - `GET /api/public/invites/{token}` preview
-    - `POST /api/public/invites/{token}/accept` (creates user inside org)
-- Rules:
-  - owner can invite admin/approver/viewer
-  - admin can invite approver/viewer only
-  - approver/viewer cannot invite
-  - role=owner rejected
-- Invite delivered via email outbox; link is `/join/<token>` (7 days)
-- Team changes are recorded as **in-app notifications** (not in the audit hash chain, which is reserved for agent decisions).
-
-**Bug found + fixed (Phase 13):**
-- Invite acceptance previously allowed weak passwords; now uses same `password_problems()` rules as signup (returns 422).
-
-**Known MVP limitation:**
-- One account belongs to one workspace; accepting invite for an email that already has a Vexen account returns 409 with a clear explanation.
 
 #### Phase 13C — Team page (frontend)
 **Status:** ✅ Completed.
-- New `/app/team` page:
-  - members list + role badges
-  - invite dialog with role cards + descriptions
-  - pending invites: resend/cancel, copy link
-  - owner Manage menu: role change and remove member with confirmation
-  - role-aware UI (approver/viewer cannot invite; only owner sees manage)
-- New public `/join/:token` page:
-  - shows workspace + role + invited email
-  - requires strong password
-  - on success signs in and lands in `/app/guide`
-- Sidebar includes “My team”; account menu shows user’s role.
 
 #### Phase 13 Verification Evidence
-- Targeted suite: **44/44** checks passed.
-- Verified all role restrictions across all mutating endpoints.
+**Status:** ✅ Completed.
 
 ---
 
@@ -259,50 +198,81 @@
 
 #### Phase 14A — VAPID + backend
 **Status:** ✅ Completed.
-- Installed: `pywebpush`, `py-vapid`
-- VAPID keys generated once and appended to backend `.env`:
-  - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
-- New `/app/backend/vexen/push.py`:
-  - uses `asyncio.to_thread` (blocking library)
-  - prunes dead subscriptions on 404/410
-  - never raises to the caller
-- New endpoints:
-  - `GET /api/push/status`
-  - `POST /api/push/subscribe` (https-only endpoint)
-  - `DELETE /api/push/subscribe` (one endpoint or all)
-  - `POST /api/push/test` (honest messaging)
-- Subscriptions stored in `push_subscriptions` with indexes:
-  - unique `endpoint`
-  - `(org_id, user_id)`
-- `push_approval_alerts()` is fired via `asyncio.create_task(...)` from approval creation; never blocks `/api/v1/authorize`.
 
 #### Phase 14B — Frontend + service worker
 **Status:** ✅ Completed.
-- New minimal service worker `/sw.js`:
-  - handles `push` and `notificationclick` only
-  - no caching and no fetch interception (normal app behavior unchanged)
-- Added `/manifest.json` + icons (`/icons/*`, `/favicon.png`)
-  - enables Add-to-Home-Screen for iOS push
-- New `/app/frontend/src/lib/push.js`:
-  - honest capability detection: unsupported, permission denied, iOS needs install
-- Settings “Alerts” tab:
-  - new “Notify me on this device” card with toggle and “Send me a test” button
-  - disables toggle with clear text when push cannot work
 
 #### Phase 14 Verification Evidence
-- API endpoints exercised end-to-end.
-- Static assets verified 200: `/sw.js`, `/manifest.json`, icons.
-- Service worker registration verified without breaking the landing page.
-- Note: actual lock-screen delivery cannot be proven from headless automation; requires user confirmation on their own device.
+**Status:** ✅ Completed (with note that real lock-screen delivery requires a real device).
+
+---
+
+### Phase 15 — Submission answers: finalize `/app/memory/SUBMISSION.md`
+**Goal:** produce paste-ready application answers with strict character-count constraints.
+
+**Status:** ✅ Completed.
+
+**Acceptance constraints (met):**
+- Q1 tweet answer: **295 characters exactly**.
+- Q2 proposal answer: **32,734 characters** (target range **32,500–32,750**, as close to 32,750 as possible without going over).
+
+**Edits performed:**
+- Condensed repetitive passages while preserving story, technical depth, and differentiators.
+- Corrected mislabeled alternate tweet lengths.
+- Added a count table + attachments table for copy/paste confidence.
+
+---
+
+### Phase 16 — Demo video v2 (“make it very very good”) — REBUILD
+**Goal:** replace/augment the current demo video with a higher-quality, captioned, feature-complete walkthrough.
+
+**Status:** ✅ Completed.
+
+**Built pipeline (scripts retained, intermediates deleted):** `/app/.demovideo/`
+- `narration.py` — 14-scene storyboard, 33 narration lines.
+- `gen_tts.py` — edge-tts (en-US-AndrewNeural), per-line clips + durations manifest.
+- `record.py` — Playwright capture (desktop 1536×864, phone 390×844) paced against narration, with lead-in trimming and an “edit out the model thinking” cut marker.
+- `make_assets.py` — on-brand 1920×1080 intro/outro + phone-stage card rendered in Chromium.
+- `make_captions.py` — 35 caption plates (PIL + Figtree/Roboto Mono) so the demo reads on mute.
+- `build.py` — scene cuts, 1080p scaling, caption burn-in, concatenation, narration bed loudnorm, MP4/WebM encode.
+
+**Delivered assets (installed + verified):**
+- `/app/frontend/public/demo/vexen-demo.mp4` — 1920×1080, ~2m59s, narrated + captioned.
+- `/app/frontend/public/demo/vexen-demo.webm` — VP9 fallback.
+- `/app/frontend/public/demo/vexen-demo-poster.png`.
+
+**Landing update:** `Landing.js` copy updated from “two minutes” → “three minutes” and mentions captions.
+
+**Verification:** playback verified in the landing modal (duration ~179.2s, 1920×1080, readyState 4).
+
+---
+
+### Phase 17 — Supporting document PDF
+**Goal:** provide a polished PDF supporting document for applications and enterprise buyers.
+
+**Status:** ✅ Completed.
+
+**Pipeline:** `/app/.demovideo/`
+- `make_shots.py` — captured 13 retina screenshots of the live app, including a freshly minted pending approval on a phone.
+- `make_pdf.py` — renders a **19-page A4** supporting document via Chromium with:
+  - full-bleed cover
+  - consistent header/footer with CSS counter page numbers
+  - comparison tables, the 13-step engine table, and code blocks
+  - real screenshots
+- `check_pdf.py` — programmatic overflow detection; **0 overflows**.
+
+**Delivered assets (installed + verified):**
+- `/app/frontend/public/docs/vexen-supporting-document.pdf`
+- copy stored at `/app/memory/vexen-supporting-document.pdf`
 
 ---
 
 ## 3) Next Actions
-1. **User acceptance testing**:
-   - Confirm approval emails land quickly and the approve/refuse link works on your phone.
-   - Turn on “Notify me on this device” on a real phone (iOS requires add-to-home-screen).
-   - Invite a teammate and confirm role restrictions match expectation.
-2. (Optional hardening) Add a small admin “Delivery” panel for the email outbox if desired (currently visible via API).
+1. **User acceptance checks (optional):**
+   - confirm the Landing modal plays the demo video in your environment
+   - confirm muted viewing is understandable (captions)
+   - open the supporting PDF and confirm it matches your submission expectations
+2. (Optional hardening) Add a small admin “Delivery” panel for email outbox if desired (currently visible via API).
 3. (Optional future) Multi-workspace switching (removes the 1-account/1-org limitation).
 
 ---
@@ -321,6 +291,24 @@
 - **In-path enforcement:** the shipped guard SDK prevents side effects when blocked/unreachable, and only allows the approved action once.
 - **In-app assistant:** grounded, plain-language answers; no key/password leakage; does not block the server; works on desktop + mobile + dark mode.
 - **Production hygiene:** throwaway scripts/artifacts removed; smoke test passes.
+
+**Success criteria (Submission answers):**
+- `/app/memory/SUBMISSION.md` meets character-count constraints:
+  - Q1: **295 chars**
+  - Q2: **32,734 chars** (≤ 32,750 and ≥ 32,500)
+
+**Success criteria (Demo video v2):**
+- 1080p master plus WebM alternative shipped.
+- Captions/chapter cards burned in; video is comprehensible muted.
+- Demonstrates:
+  - approve-by-phone from email
+  - SDK fail-closed enforcement guarantee
+  - team seats + roles
+
+**Success criteria (Supporting document PDF):**
+- PDF shipped at a stable URL: `/docs/vexen-supporting-document.pdf`
+- 19 pages, A4, selectable text, no layout overlap/clipping
+- Uses real screenshots from the live app
 
 **Success criteria (Phases 12–14):**
 - When an agent enters `APPROVAL_REQUIRED`, Vexen queues **exactly one** approval alert per eligible recipient (subject to per-person toggles) without slowing `/api/v1/authorize`.
@@ -346,9 +334,20 @@
 - `/app/test_reports/iteration_6.json` — **testing_agent_v3** independent verification:
   - **110/110 backend tests passed**
   - no critical bugs, no regressions
-  - tenant isolation confirmed including new unauthenticated `/api/public/*` routes
+  - tenant isolation confirmed including unauthenticated `/api/public/*` routes
 - `/app/tests/smoke_e2e.py` — maintained regression test:
   - extended to **55/55** checks covering Phases 12–14
+- `/app/memory/SUBMISSION.md` — submission answers:
+  - Q1 **295 chars**, Q2 **32,734 chars** (verified by script)
+- Demo assets:
+  - `/app/frontend/public/demo/vexen-demo.mp4`
+  - `/app/frontend/public/demo/vexen-demo.webm`
+  - `/app/frontend/public/demo/vexen-demo-poster.png`
+- Supporting document:
+  - `/app/frontend/public/docs/vexen-supporting-document.pdf`
+  - `/app/memory/vexen-supporting-document.pdf`
+- Demo video + PDF direct-link checks:
+  - URLs return 206 and correct content types over the preview base URL
 
 ---
 

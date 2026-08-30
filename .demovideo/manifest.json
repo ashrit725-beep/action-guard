@@ -1,0 +1,343 @@
+{
+  "total": 176.10000000000002,
+  "scenes": [
+    {
+      "id": "s00_title",
+      "kind": "card",
+      "card": "intro",
+      "chapter": null,
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s00_title_00.mp3",
+          "dur": 4.896,
+          "cap": "Your AI agents can spend your money, email your customers\nand delete your files.",
+          "say": "Your AI agents can spend your money, email your customers, and delete your files."
+        },
+        {
+          "file": "/app/.demovideo/narration/s00_title_01.mp3",
+          "dur": 4.32,
+          "cap": "Vexen decides, every single time, whether they are allowed to.",
+          "say": "Vexen decides, every single time, whether they are actually allowed to."
+        }
+      ],
+      "dur": 10.406
+    },
+    {
+      "id": "s01_landing",
+      "kind": "web",
+      "card": null,
+      "chapter": "How it works",
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s01_landing_00.mp3",
+          "dur": 4.272,
+          "cap": "Vexen sits in front of your agents. Every action goes through one call.",
+          "say": "Vexen sits in front of your agents. Every action goes through one call."
+        },
+        {
+          "file": "/app/.demovideo/narration/s01_landing_01.mp3",
+          "dur": 5.688,
+          "cap": "There are only ever three answers: Allowed, Blocked, or Needs your OK.",
+          "say": "And there are only ever three answers to learn. Allowed. Blocked. Or, needs your OK."
+        }
+      ],
+      "dur": 11.15
+    },
+    {
+      "id": "s02_signup",
+      "kind": "web",
+      "card": null,
+      "chapter": "Getting started",
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s02_signup_00.mp3",
+          "dur": 4.752,
+          "cap": "Getting started is one screen. Your name, your email, a password.",
+          "say": "Getting started is one screen. Your name, your email, a password."
+        },
+        {
+          "file": "/app/.demovideo/narration/s02_signup_01.mp3",
+          "dur": 5.496,
+          "cap": "Your workspace begins completely locked down \u2014 nothing can act for you yet.",
+          "say": "Your workspace begins completely locked down. Nothing can act on your behalf until you say so."
+        }
+      ],
+      "dur": 11.438
+    },
+    {
+      "id": "s03_library",
+      "kind": "web",
+      "card": null,
+      "chapter": "Ready-made agents",
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s03_library_00.mp3",
+          "dur": 3.888,
+          "cap": "When you are ready, there are over ten thousand ready-made agents.",
+          "say": "When you are ready, there are over ten thousand ready-made agents."
+        },
+        {
+          "file": "/app/.demovideo/narration/s03_library_01.mp3",
+          "dur": 4.824,
+          "cap": "Filter by the job, your field, and how much freedom you want to hand over.",
+          "say": "Filter by the job, the field you work in, and how much freedom you want to hand over."
+        },
+        {
+          "file": "/app/.demovideo/narration/s03_library_02.mp3",
+          "dur": 5.04,
+          "cap": "Every one arrives already narrowed. Nobody starts from a blank page.",
+          "say": "Every one of them arrives already narrowed down. Nobody starts from a blank page."
+        }
+      ],
+      "dur": 15.262
+    },
+    {
+      "id": "s04_tryit",
+      "kind": "web",
+      "card": null,
+      "chapter": "Try an action",
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s04_tryit_00.mp3",
+          "dur": 3.864,
+          "cap": "Now the part that matters: ask what would happen if your agent tried something.",
+          "say": "Now the part that matters. Ask what would happen if your agent tried something."
+        },
+        {
+          "file": "/app/.demovideo/narration/s04_tryit_01.mp3",
+          "dur": 5.208,
+          "cap": "$250 is over the cap \u2014 so Vexen pauses it and waits for a person.",
+          "say": "Two hundred and fifty dollars is over the cap, so Vexen pauses it and waits for a person."
+        },
+        {
+          "file": "/app/.demovideo/narration/s04_tryit_02.mp3",
+          "dur": 1.776,
+          "cap": "Nothing has been bought.",
+          "say": "Nothing has been bought."
+        },
+        {
+          "file": "/app/.demovideo/narration/s04_tryit_03.mp3",
+          "dur": 5.712,
+          "cap": "And it shows every check it made, in order \u2014 the same checks, every time.",
+          "say": "And it shows you every check it made, in the order it made them. The same checks, every single time."
+        }
+      ],
+      "dur": 18.39
+    },
+    {
+      "id": "s05_blocked",
+      "kind": "web",
+      "card": null,
+      "chapter": "Blocked outright",
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s05_blocked_00.mp3",
+          "dur": 2.448,
+          "cap": "Saved card details are refused outright.",
+          "say": "Saved card details are refused outright."
+        },
+        {
+          "file": "/app/.demovideo/narration/s05_blocked_01.mp3",
+          "dur": 3.984,
+          "cap": "Even if somebody granted that permission by mistake, a rule stops it.",
+          "say": "Even if somebody granted that permission by mistake, a rule stops it."
+        }
+      ],
+      "dur": 7.622
+    },
+    {
+      "id": "s06_rules",
+      "kind": "web",
+      "card": null,
+      "chapter": "Rules in plain English",
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s06_rules_00.mp3",
+          "dur": 2.832,
+          "cap": "You can write a safety rule the way you would say it out loud.",
+          "say": "You can write a safety rule the way you would say it out loud."
+        },
+        {
+          "file": "/app/.demovideo/narration/s06_rules_01.mp3",
+          "dur": 5.184,
+          "cap": "Vexen turns your sentence into a real rule and shows what it understood.",
+          "say": "Vexen turns your sentence into a real rule, and shows you exactly what it understood."
+        },
+        {
+          "file": "/app/.demovideo/narration/s06_rules_02.mp3",
+          "dur": 5.256,
+          "cap": "The AI writes rules. The AI never enforces them.",
+          "say": "Nothing is saved until you approve it. The A I writes rules. The A I never enforces them."
+        }
+      ],
+      "dur": 14.782
+    },
+    {
+      "id": "s07_email",
+      "kind": "web",
+      "card": null,
+      "chapter": "The alert",
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s07_email_00.mp3",
+          "dur": 4.464,
+          "cap": "The moment an agent is paused, everyone allowed to decide gets an email.",
+          "say": "The moment an agent is paused, everyone allowed to decide gets an email."
+        },
+        {
+          "file": "/app/.demovideo/narration/s07_email_01.mp3",
+          "dur": 5.472,
+          "cap": "Which agent, what it wants, how much, and which rule stopped it.",
+          "say": "Which agent, what it wants, how much, and which rule stopped it. Then two big buttons."
+        }
+      ],
+      "dur": 11.126
+    },
+    {
+      "id": "s08_phone",
+      "kind": "web",
+      "card": null,
+      "chapter": "Approve from your phone",
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s08_phone_00.mp3",
+          "dur": 4.224,
+          "cap": "Tapping one opens a phone-sized page. No login, no app.",
+          "say": "Tapping one opens a phone sized page. No login, no app."
+        },
+        {
+          "file": "/app/.demovideo/narration/s08_phone_01.mp3",
+          "dur": 4.968,
+          "cap": "The link only ever shows the decision. Approving takes a deliberate second tap.",
+          "say": "The link only ever shows you the decision. Approving takes a deliberate second tap."
+        },
+        {
+          "file": "/app/.demovideo/narration/s08_phone_02.mp3",
+          "dur": 3.768,
+          "cap": "So a corporate link scanner can never approve a purchase on your behalf.",
+          "say": "So a corporate link scanner can never approve a purchase on your behalf."
+        }
+      ],
+      "dur": 14.47
+    },
+    {
+      "id": "s09_approvals",
+      "kind": "web",
+      "card": null,
+      "chapter": "Single use, every time",
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s09_approvals_00.mp3",
+          "dur": 5.904,
+          "cap": "Approvals are single use, expire in thirty minutes, and are bound to that action.",
+          "say": "Approvals are single use, they expire in thirty minutes, and they are bound to that exact action."
+        },
+        {
+          "file": "/app/.demovideo/narration/s09_approvals_01.mp3",
+          "dur": 3.768,
+          "cap": "Same permission, same item, same amount \u2014 to the cent.",
+          "say": "Same permission, same item, same amount, to the cent."
+        }
+      ],
+      "dur": 10.862
+    },
+    {
+      "id": "s10_developers",
+      "kind": "web",
+      "card": null,
+      "chapter": "Genuine enforcement",
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s10_developers_00.mp3",
+          "dur": 4.272,
+          "cap": "For engineers it is one decorator around the function that spends the money.",
+          "say": "For engineers it is one decorator around the function that spends the money."
+        },
+        {
+          "file": "/app/.demovideo/narration/s10_developers_01.mp3",
+          "dur": 7.176,
+          "cap": "If Vexen blocks, that function never runs. If a human is needed, it waits.",
+          "say": "If Vexen blocks, that function never runs. If a human is needed, it waits, and then runs exactly once."
+        },
+        {
+          "file": "/app/.demovideo/narration/s10_developers_02.mp3",
+          "dur": 5.088,
+          "cap": "And if Vexen is unreachable, it still does not run. Fail closed is the default.",
+          "say": "And if Vexen is unreachable, it still does not run. Fail closed is the default."
+        }
+      ],
+      "dur": 18.046
+    },
+    {
+      "id": "s11_history",
+      "kind": "web",
+      "card": null,
+      "chapter": "Evidence",
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s11_history_00.mp3",
+          "dur": 4.872,
+          "cap": "Every decision is written down and sealed with a hash, so tampering shows up.",
+          "say": "Every decision is written down and sealed with a hash, so tampering shows up."
+        },
+        {
+          "file": "/app/.demovideo/narration/s11_history_01.mp3",
+          "dur": 5.208,
+          "cap": "One click verifies the whole record.",
+          "say": "One click verifies the whole record. Evidence you can hand to somebody who does not trust you."
+        }
+      ],
+      "dur": 11.27
+    },
+    {
+      "id": "s12_team",
+      "kind": "web",
+      "card": null,
+      "chapter": "Your team",
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s12_team_00.mp3",
+          "dur": 4.32,
+          "cap": "A standing safety check tells you, in plain words, what is worth tightening.",
+          "say": "A standing safety check tells you, in plain words, what is worth tightening."
+        },
+        {
+          "file": "/app/.demovideo/narration/s12_team_01.mp3",
+          "dur": 3.216,
+          "cap": "And your team gets four roles, enforced on the server.",
+          "say": "And your team gets four roles, enforced on the server."
+        },
+        {
+          "file": "/app/.demovideo/narration/s12_team_02.mp3",
+          "dur": 4.632,
+          "cap": "So whoever approves the money never has to be whoever edits the rules.",
+          "say": "So the person who approves the money never has to be the person who edits the rules."
+        }
+      ],
+      "dur": 13.678
+    },
+    {
+      "id": "s13_outro",
+      "kind": "card",
+      "card": "outro",
+      "chapter": null,
+      "lines": [
+        {
+          "file": "/app/.demovideo/narration/s13_outro_00.mp3",
+          "dur": 2.4,
+          "cap": "Give AI power. Keep control.",
+          "say": "Give A I power. Keep control."
+        },
+        {
+          "file": "/app/.demovideo/narration/s13_outro_01.mp3",
+          "dur": 4.008,
+          "cap": "Vexen \u2014 free to start, and locked down from the first second.",
+          "say": "Vexen. Free to start, and locked down from the very first second."
+        }
+      ],
+      "dur": 7.598
+    }
+  ],
+  "line_gap": 0.32,
+  "scene_tail": 0.55
+}

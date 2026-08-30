@@ -192,10 +192,10 @@ function DemoDialog({ open, onOpenChange }) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl p-0">
         <DialogHeader className="px-5 pb-3 pt-5">
-          <DialogTitle className="font-display">See Vexen in two minutes</DialogTitle>
+          <DialogTitle className="font-display">See Vexen in three minutes</DialogTitle>
           <DialogDescription>
-            A real walkthrough: creating an account, adding an agent, and watching Vexen allow, pause
-            and block what it tries to do.
+            A real walkthrough: creating an account, adding an agent, watching Vexen allow, pause
+            and block what it tries to do, and approving a paused purchase from a phone.
           </DialogDescription>
         </DialogHeader>
         <div className="border-t border-border bg-muted/40 p-3">
@@ -245,7 +245,7 @@ function DemoDialog({ open, onOpenChange }) {
               >
                 {blocked
                   ? "Press play to start the walkthrough — it has spoken narration, so turn your sound on."
-                  : "Two minutes, with spoken narration. Use the controls to skip around."}
+                  : "Three minutes, with spoken narration and on-screen captions. Use the controls to skip around."}
               </p>
             </>
           )}

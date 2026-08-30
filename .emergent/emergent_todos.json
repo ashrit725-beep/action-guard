@@ -1,30 +1,46 @@
 [
   {
-    "content": "PHASE 12 COMPLETE: Gmail SMTP outbox, approval alert emails, one-tap approve/refuse links, Settings email toggles",
+    "content": "Trim SUBMISSION.md Q1 tweet to 295 chars and Q2 proposal to ~32,750 chars; verify with script",
     "status": "completed"
   },
   {
-    "content": "PHASE 13 COMPLETE: roles Owner/Admin/Approver/Viewer, role guards, invites, Team page, /join/:token",
+    "content": "Verify Playwright chromium + install Figtree/Roboto Mono fonts for on-brand cards",
     "status": "completed"
   },
   {
-    "content": "PHASE 14 COMPLETE: pywebpush + VAPID, push endpoints, sw.js, manifest + icons, Settings device toggle",
+    "content": "Write chaptered narration script covering new hero features (phone approval, SDK, team)",
     "status": "completed"
   },
   {
-    "content": "Restore curated requirements.txt and append only the 3 new packages",
+    "content": "Generate narration audio per line with edge-tts and measure durations",
     "status": "completed"
   },
   {
-    "content": "Testing agent verification: 110/110 backend tests passed, zero bugs",
+    "content": "Record 1080p desktop scenes + phone scene with Playwright (real signup, real approval)",
     "status": "completed"
   },
   {
-    "content": "Extend kept smoke test to 55 checks covering the new features",
+    "content": "Render intro/outro cards, phone stage and burned-in caption plates",
     "status": "completed"
   },
   {
-    "content": "Update plan.md, remove test artifacts, leave a real approval email in the user's inbox",
+    "content": "Composite scenes + captions + narration into the final cut",
+    "status": "completed"
+  },
+  {
+    "content": "Encode MP4 (h264 1080p) + WebM (VP9) + poster; install into /app/frontend/public/demo/",
+    "status": "completed"
+  },
+  {
+    "content": "Verify playback in Landing modal + direct links; update Landing copy",
+    "status": "completed"
+  },
+  {
+    "content": "Build branded 19-page supporting-document PDF with real app screenshots; verify no overflow",
+    "status": "completed"
+  },
+  {
+    "content": "Run smoke tests (55/55 pass) and clean up build artifacts",
     "status": "completed"
   }
 ]

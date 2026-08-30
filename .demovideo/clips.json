@@ -1,0 +1,79 @@
+{
+  "s01_landing": {
+    "lead_in": 2.06,
+    "cuts": [],
+    "need": 11.15,
+    "raw": 13.08
+  },
+  "s02_signup": {
+    "lead_in": 1.568,
+    "cuts": [],
+    "need": 11.438,
+    "raw": 12.84
+  },
+  "s03_library": {
+    "lead_in": 2.381,
+    "cuts": [],
+    "need": 15.262,
+    "raw": 18.48
+  },
+  "s04_tryit": {
+    "lead_in": 2.638,
+    "cuts": [],
+    "need": 18.39,
+    "raw": 20.88
+  },
+  "s05_blocked": {
+    "lead_in": 2.276,
+    "cuts": [],
+    "need": 7.622,
+    "raw": 9.6
+  },
+  "s06_rules": {
+    "lead_in": 2.416,
+    "cuts": [
+      [
+        12.054,
+        16.229
+      ]
+    ],
+    "need": 14.782,
+    "raw": 23.6
+  },
+  "s07_email": {
+    "lead_in": 1.613,
+    "cuts": [],
+    "need": 11.126,
+    "raw": 12.56
+  },
+  "s08_phone": {
+    "lead_in": 2.289,
+    "cuts": [],
+    "need": 14.47,
+    "raw": 16.48
+  },
+  "s09_approvals": {
+    "lead_in": 2.332,
+    "cuts": [],
+    "need": 10.862,
+    "raw": 13.04
+  },
+  "s10_developers": {
+    "lead_in": 2.538,
+    "cuts": [],
+    "need": 18.046,
+    "raw": 20.4
+  },
+  "s11_history": {
+    "lead_in": 2.514,
+    "cuts": [],
+    "need": 11.27,
+    "raw": 13.6
+  },
+  "s12_team": {
+    "lead_in": 2.448,
+    "cuts": [],
+    "need": 13.678,
+    "raw": 15.96
+  }
+}

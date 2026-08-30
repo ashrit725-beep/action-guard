@@ -17,23 +17,13 @@ import { api, errorMessage } from "@/lib/api";
 const FOUNDERS = [
   {
     name: "Ashrit Talluri",
-    role: "Co-founder",
+    role: "Founder",
     focus: "The decision engine, the rule system, and platform security",
     initials: "AT",
-    phone: "7706493107",
+    phone: "770-649-3107",
     phoneHref: "tel:7706493107",
     quote:
       "An agent should never be able to do something you did not explicitly allow. That is the whole product.",
-  },
-  {
-    name: "Aditya Mirchandani",
-    role: "Co-founder",
-    focus: "Product, the agent library, and making all of this easy to understand",
-    initials: "AM",
-    phone: "+1 (404) 855-1929",
-    phoneHref: "tel:+14048551929",
-    quote:
-      "Security tools fail when nobody understands them. Vexen shows you the exact reason for every decision.",
   },
 ];
 
@@ -83,14 +73,14 @@ export default function Contact() {
         <div className="vx-hero-glow pointer-events-none absolute inset-x-0 top-0 h-[260px]" aria-hidden="true" />
         <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
           <span className="vx-chip border-primary/35 bg-primary/10 text-primary">
-            <ShieldCheck className="h-3.5 w-3.5" /> Talk to the founders
+            <ShieldCheck className="h-3.5 w-3.5" /> Talk to the founder
           </span>
           <h1 className="mt-5 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             Contact Vexen
           </h1>
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground">
             Whether you are wiring a real agent into the authorization API, reviewing our security model,
-            or just want a walkthrough &mdash; the two of us read every message.
+            or just want a walkthrough &mdash; every message is read personally.
           </p>
         </div>
       </section>
@@ -138,16 +128,12 @@ export default function Contact() {
                   Ashrit{" "}
                   <a href="tel:7706493107" className="font-medium text-foreground hover:text-primary">
                     770-649-3107
-                  </a>{" "}
-                  · Aditya{" "}
-                  <a href="tel:+14048551929" className="font-medium text-foreground hover:text-primary">
-                    +1 (404) 855-1929
                   </a>
                 </span>
               </li>
               <li className="flex items-center gap-2.5 text-muted-foreground">
                 <Mail className="h-4 w-4 shrink-0 text-primary" />
-                <span>Or use the form &mdash; it reaches both of us.</span>
+                <span>Or use the form &mdash; it comes straight to us.</span>
               </li>
               <li className="flex items-center gap-2.5 text-muted-foreground">
                 <MapPin className="h-4 w-4 shrink-0 text-primary" />
@@ -168,8 +154,8 @@ export default function Contact() {
               <h2 className="mt-4 font-display text-xl font-semibold text-foreground">Message received</h2>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 Your message is stored against reference{" "}
-                <span className="vx-mono text-foreground">{reference}</span>. Ashrit and Aditya will get
-                back to you.
+                <span className="vx-mono text-foreground">{reference}</span>. Ashrit will get back to
+                you.
               </p>
               <Button
                 variant="outline"
