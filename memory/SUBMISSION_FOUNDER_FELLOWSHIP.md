@@ -304,3 +304,113 @@ Startup description (780 / 800), Anything else (969 / 1000) and
 Traction notes (981 / 1000) are the exact strings held in
 /app/deck/check_fields.py - run `python /app/deck/check_fields.py` to re-verify
 counts after any edit.
+
+---
+
+## Q: Tell us more about the team
+## (How does the team know each other? Anyone else? Why is this the best team to
+## win? Key advisors?)
+
+It is one person: me. No co-founder, no employees, no contractors. I would
+rather state that plainly than dress a solo project up as a team.
+
+How the team knows each other. There is no team yet, so the honest version of
+this question is: have I worked well with other people before? Yes, in three
+different shapes. As COO of The1550Formula I ran operations alongside a founder
+and a small team, and we took it to roughly $70,000 a month serving over 1,000
+students — so I have been the operator inside somebody else's company, not only
+the person with the idea. I founded PythonPal, a nonprofit that has taught
+programming to more than 100 students, which meant recruiting and coordinating
+volunteers rather than doing everything myself. And I lead HorizonSTEM workshops
+for middle schoolers, reaching 150 more. None of that is a co-founder
+relationship, but it is evidence I can hire, delegate, and be accountable to
+people other than myself.
+
+Why this is the best team to win, right now. Two arguments, both honest.
+
+First, velocity through a coherent model. Vexen is one tightly-coupled
+guarantee: the engine, the approval invariants, the SDK semantics and the audit
+format all have to agree, because a gap between any two of them is a
+vulnerability. Holding that whole model in one head is a real advantage at this
+stage. It is why the product exists at all after two months, and why the
+invariants are correct rather than approximately correct. A three-person team
+with divided ownership would probably have shipped more screens and a weaker
+guarantee.
+
+Second, this is the sixth time. The failure mode for a solo founder is rarely
+intelligence — it is not finishing. I have taken five products from nothing to
+real users: 70,000 on HealthLens, 20,000 on AI-Namo (adopted by a local
+government), 10,000 on GreenGuide, 5,000 on CerebroAegis, and now 5,000 on
+Vexen, none with a marketing budget. Whatever else is uncertain, "will he ship,
+and will anyone show up" is the part I have the most evidence for.
+
+Where the solo structure genuinely hurts, and what fixes it. Concentration risk
+is real. I am the single point of failure on the roadmap, and I am also the
+bottleneck on the one thing I have never done — selling a security product
+through an enterprise procurement cycle. Those are two different problems
+needing two different people:
+
+- A founding engineer out of IAM, fraud or payments, to own the credential
+  broker: the piece that turns Vexen from a check an agent chooses to make into
+  a constraint it cannot avoid. This is token lifecycle and key management, where
+  a subtle error stays invisible until it is catastrophic. I want somebody who
+  has carried a pager for a system where a bug moved money incorrectly.
+- A first go-to-market hire who has sold an infrastructure control to a
+  mid-market ops or finance buyer and can run a design-partner programme. Their
+  first target is not pipeline — it is ten teams with agents in production behind
+  Vexen, telling us where the approval flow breaks in a real approval chain.
+
+Advisors. No formal advisory board, and I would rather say so than list people
+who have taken one call with me. What I want is three people who will answer a
+text within the hour: a security or compliance leader at a fintech or health
+company (the buyer, who tells me when I am wrong about procurement); an
+authorization architect (the technical adversary who reviews the broker design
+before I ship it); and an operator who has taken a bottom-up developer tool into
+enterprise contracts (someone who has already made the mistakes I am about to
+make). I do not have those three yet, and getting them is one of the most
+valuable things this programme could do for me — more valuable, honestly, than
+the equivalent amount of capital.
+
+Which is the real answer to "why this team". Today it is one person with an
+unusually strong shipping record and one named, admitted gap. I am not asking you
+to agree the team is complete. I am asking for help completing it.
+
+---
+
+## Q: Anything else we should know? (optional)
+
+Three things that do not fit anywhere else.
+
+1. The version of this I actually care about. The small version of Vexen is a
+useful B2B tool that stops agents overspending, and that is probably a company.
+The version I want is an open standard. Every team inventing agent permissions
+right now is inventing them differently, so there is no way to ask "what is this
+agent allowed to do?" across two systems, no way to carry an approval between
+them, and no shared vocabulary a regulator or an insurer can point at. Identity
+got SAML and OAuth. Payments got card network rules. Agent authority has
+nothing, and the window in which those conventions get set is open now and will
+not stay open. I would rather be the reference implementation of an open standard
+than the owner of a closed one — and I think that is the more valuable outcome
+for an early investor too, because it is the version one person can start and an
+incumbent structurally cannot.
+
+2. How I would like to be judged. Not on a deck. On five things you can do
+yourself in an afternoon. Point a real agent at it, block it, and confirm the
+side effect never happened. Try to break an approval — replay it, escalate the
+amount, reuse it for a different order, forge the token. Hand the console to
+somebody who has never seen an API key and see if they can grant a permission,
+write a rule and approve a paused action. Alter an audit row directly in the
+database and confirm the integrity check catches it. Take the service offline and
+confirm the guarded function refuses to run. Those five are the product;
+everything else is packaging.
+
+3. The honest ledger. No revenue. Python-only SDK. One workspace per account. No
+SSO, SCIM or SOC 2. The credential broker is designed but unbuilt. Push delivery
+to a real lock screen is mechanically verified but only provable on a physical
+device. I am listing these because a security product that overstates its own
+readiness is the exact failure I am arguing against — and because I would rather
+you find these gaps in this paragraph than in a diligence call.
+
+One last thing, and it is the one I would most like you to weigh. Every product
+I have built so far was built in the gaps around everything else. Vexen is the
+first one I want to do as the only thing I do.
