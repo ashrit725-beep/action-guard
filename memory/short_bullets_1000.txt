@@ -1,0 +1,9 @@
+Solo technical founder. Vexen is my sixth product; the previous five reached 100,000+ users between them, no paid acquisition.
+
+1. Built solo, full-stack: HealthLens, AI wellness, 70k users. AI-Namo, AI document-fraud verification, 20k, adopted by a local government. GreenGuide, agricultural copilot, 10k. CerebroAegis, health and safety, 5k.
+
+2. COO of The1550Formula, AI SAT prep - helped run it to ~$70k/month with 1,000+ students. Founded PythonPal, a nonprofit teaching 100+ students. Channel past 3M views.
+
+3. Now: Vexen, the permission layer for AI agents. Agent limits live in prompts, which are suggestions, not permissions. One API call returns allow, block or ask a human - deterministic, no model in the enforcement path. The agent halts, the accountable human approves in two taps on their phone, hash-verified audit. Live, 5,000+ users. Next: a credential broker so agents cannot exceed their authority.
+
+4. No co-founder yet. Hire 1: a founding engineer from IAM, fraud or payments.
