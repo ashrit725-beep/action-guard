@@ -1,0 +1,5 @@
+Solo founder - one person, not a roster.
+1. Distribution with no budget. My previous five products reached 100,000+ users with no paid acquisition, plus a 3M-view channel. A security primitive spreads by reaching the engineer the week before they ship an agent with a production key - what I am best at. Vexen: 5,000+ users in two months.
+2. I get the invariants right, and here they are the product. Approvals are single-use, TTL-bound, atomically claimed, scope-bound to the cent; email actions are POST-only, so a link scanner cannot approve a purchase; audit is hash-verified; the SDK is fail-closed. Most implementations ship approvals that can be replayed - worse than none, since a signed record claims a human agreed. Verified: 55/55 end-to-end checks and an independent 110/110 pass.
+3. I know the commercial half: COO of an AI test-prep firm at ~$70k/month.
+The gap, before you find it: I have never sold security through enterprise procurement - that is hire two.
