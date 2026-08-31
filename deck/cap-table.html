@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Vexen - Capitalization Table</title>
+<link rel="stylesheet" href="fonts.css" />
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:        #12151a;
+    --ink-soft:   #3d4552;
+    --ink-faint:  #7b8494;
+    --rule:       #d8dce4;
+    --rule-soft:  #eceef2;
+    --panel:      #f6f7f9;
+    --accent:     #1d4ed8;
+    --sp:         8px;
+  }
+
+  html, body { width: 210mm; height: 297mm; }
+  body {
+    font-family: 'IBM Plex Sans', Arial, sans-serif;
+    color: var(--ink);
+    font-size: 9.1pt;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page { padding: 11mm 14mm 8mm; height: 297mm; display: flex; flex-direction: column; }
+
+  /* ---------- header ---------- */
+  header { border-bottom: 1.6px solid var(--ink); padding-bottom: calc(var(--sp) * 1.25); }
+  .brand {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700; font-size: 20pt; letter-spacing: -0.02em; line-height: 1;
+  }
+  .doc-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500; font-size: 11pt; color: var(--ink-soft); margin-top: 3px;
+  }
+  .meta {
+    display: flex; gap: calc(var(--sp) * 3); margin-top: calc(var(--sp) * 1.25);
+    font-family: 'IBM Plex Mono', monospace; font-size: 7.6pt; color: var(--ink-faint);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .meta b { display: block; color: var(--ink); font-weight: 600; letter-spacing: 0.02em; text-transform: none; font-size: 8.6pt; }
+
+  /* ---------- summary strip ---------- */
+  .strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: calc(var(--sp) * 1.5); margin-top: calc(var(--sp) * 1.75); }
+  .card { background: var(--panel); border: 1px solid var(--rule-soft); border-radius: 6px; padding: calc(var(--sp) * 1.25); }
+  .card .k {
+    font-family: 'IBM Plex Mono', monospace; font-size: 7pt; letter-spacing: 0.09em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  .card .v { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 12.5pt; margin-top: 3px; line-height: 1.15; }
+  .card .s { font-size: 8.4pt; color: var(--ink-soft); margin-top: 2px; }
+
+  /* ---------- sections ---------- */
+  section { margin-top: calc(var(--sp) * 1.75); }
+  h2 {
+    font-family: 'Space Grotesk', sans-serif; font-size: 9.6pt; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink);
+    padding-bottom: 5px; border-bottom: 1px solid var(--rule);
+  }
+  .sub { font-size: 8.6pt; color: var(--ink-faint); margin-top: 5px; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: calc(var(--sp) * 1.25); }
+  th.num { padding-left: 12px; }
+  th {
+    text-align: left; font-family: 'IBM Plex Mono', monospace; font-size: 7.2pt;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint);
+    font-weight: 500; padding: 0 0 5px;
+  }
+  td { padding: 4.5px 0; border-top: 1px solid var(--rule-soft); vertical-align: top; }
+  td.num, th.num { text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 9pt; white-space: nowrap; }
+  tr.total td { border-top: 1.4px solid var(--ink); font-weight: 700; }
+  .holder { font-weight: 600; }
+  .holder span { display: block; font-weight: 400; font-size: 8.4pt; color: var(--ink-faint); }
+  .none {
+    margin-top: calc(var(--sp) * 1); padding: calc(var(--sp) * 1.1) calc(var(--sp) * 1.4);
+    border: 1px dashed var(--rule); border-radius: 6px; color: var(--ink-soft); font-size: 9pt;
+  }
+  .none b { color: var(--ink); }
+
+  .illus { background: var(--panel); border-radius: 6px; padding: calc(var(--sp) * 1.25); margin-top: calc(var(--sp) * 1); }
+  .illus table { margin-top: 0; }
+  .illus td { border-top: 1px solid #e2e5eb; }
+  .illus th { color: var(--ink-soft); }
+  .tag {
+    display: inline-block; font-family: 'IBM Plex Mono', monospace; font-size: 6.8pt;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent);
+    border: 1px solid #c7d3f5; background: #eef2fd; border-radius: 3px; padding: 2px 5px;
+    vertical-align: 2px; margin-left: 6px;
+  }
+
+  ol.notes { margin-top: calc(var(--sp) * 1); padding-left: 15px; }
+  ol.notes li { margin-bottom: 2px; font-size: 8.6pt; color: var(--ink-soft); }
+  ol.notes li b { color: var(--ink); font-weight: 600; }
+
+  footer {
+    margin-top: auto; padding-top: calc(var(--sp) * 1.25); border-top: 1px solid var(--rule);
+    display: flex; justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace; font-size: 7pt; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="brand">Vexen</div>
+    <div class="doc-title">Capitalization table</div>
+    <div class="meta">
+      <div>As of<b>31 August 2026</b></div>
+      <div>Entity status<b>Not yet incorporated</b></div>
+      <div>Outside capital<b>None raised</b></div>
+      <div>Prepared by<b>Sole founder</b></div>
+    </div>
+  </header>
+
+  <div class="strip">
+    <div class="card">
+      <div class="k">Founder ownership</div>
+      <div class="v">100.00%</div>
+      <div class="s">Fully diluted, sole holder</div>
+    </div>
+    <div class="card">
+      <div class="k">Investors / SAFEs / debt</div>
+      <div class="v">None</div>
+      <div class="s">No convertibles outstanding</div>
+    </div>
+    <div class="card">
+      <div class="k">Option pool reserved</div>
+      <div class="v">0.00%</div>
+      <div class="s">No grants made or promised</div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Current ownership</h2>
+    <div class="sub">Vexen has not been incorporated, so no shares are issued and outstanding today. The table below states the intended founding structure on incorporation, which is the accurate representation of ownership as it stands.</div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:36%">Holder</th>
+          <th style="width:30%">Security</th>
+          <th class="num" style="width:16%">Shares</th>
+          <th class="num" style="width:18%">Fully diluted</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="holder">Founder <span>Sole founder, sole owner</span></td>
+          <td>Common stock, to be issued on incorporation</td>
+          <td class="num">10,000,000</td>
+          <td class="num">100.00%</td>
+        </tr>
+        <tr>
+          <td class="holder">Employee option pool <span>Not yet reserved</span></td>
+          <td>&mdash;</td>
+          <td class="num">0</td>
+          <td class="num">0.00%</td>
+        </tr>
+        <tr>
+          <td class="holder">Advisors, contractors, other <span>No equity issued or promised</span></td>
+          <td>&mdash;</td>
+          <td class="num">0</td>
+          <td class="num">0.00%</td>
+        </tr>
+        <tr class="total">
+          <td>Total</td>
+          <td>&mdash;</td>
+          <td class="num">10,000,000</td>
+          <td class="num">100.00%</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Convertible securities and debt</h2>
+    <div class="none">
+      <b>None.</b> No SAFEs, convertible notes, warrants, options, phantom equity, revenue share
+      agreements, venture debt or bank borrowings exist. No side letters, verbal commitments or
+      informal equity promises have been made to any person. Vexen has been funded entirely from
+      the founder's own resources.
+    </div>
+  </section>
+
+  <section>
+    <h2>Illustrative post-raise ownership <span class="tag">Not committed</span></h2>
+    <div class="sub">Shown only to make the intended round mechanics explicit. No terms are agreed, no investor is committed, and this has no bearing on current ownership.</div>
+    <div class="illus">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:46%">Scenario: $750,000 on a post-money SAFE, $8,000,000 cap</th>
+            <th class="num" style="width:27%">Ownership</th>
+            <th class="num" style="width:27%">Fully diluted</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Founder</td>
+            <td class="num">9,062,500</td>
+            <td class="num">90.63%</td>
+          </tr>
+          <tr>
+            <td>New investors, on conversion</td>
+            <td class="num">937,500</td>
+            <td class="num">9.37%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Notes and assumptions</h2>
+    <ol class="notes">
+      <li><b>Incorporation.</b> Vexen is operated by its founder and is not yet incorporated. The intention is a Delaware C corporation formed at or shortly before a first financing, with 10,000,000 shares of common stock authorised and issued to the founder.</li>
+      <li><b>Vesting.</b> Founder shares are intended to carry a standard four-year vesting schedule with a one-year cliff from the date of incorporation, so an investor is not funding fully vested founder equity.</li>
+      <li><b>Intellectual property.</b> All code, designs, documentation and content were created solely by the founder, with no contractors, agencies or co-authors, and no employer, university or third party has any claim to it. All IP will be assigned to the company on incorporation.</li>
+      <li><b>Headcount.</b> No employees or contractors. First two intended hires are a founding engineer for the credential broker and a first go-to-market hire, both to be compensated from an option pool established at the first priced round.</li>
+      <li><b>Cash, burn and runway.</b> Cash on hand $50,000, all founder-contributed. Monthly burn approximately $200, limited to hosting, domains and API usage, so runway is not a constraint. Pre-revenue by choice while enforcement guarantees are completed.</li>
+      <li><b>Product status.</b> Vexen is live in production with over 5,000 users, built solo over two months, with no paid acquisition and no outside capital.</li>
+    </ol>
+  </section>
+
+  <footer>
+    <div>Vexen &mdash; capitalization table &mdash; 31 August 2026</div>
+    <div>Page 1 of 1</div>
+  </footer>
+
+</div>
+</body>
+</html>

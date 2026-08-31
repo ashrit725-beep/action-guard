@@ -139,6 +139,11 @@ DOWNLOADS = {
         "Vexen-Pitch-Deck.pdf",
         "application/pdf",
     ),
+    "cap-table": (
+        "docs/vexen-cap-table.pdf",
+        "Vexen-Cap-Table.pdf",
+        "application/pdf",
+    ),
 }
 
 
