@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Menlo Inception Idea One-Pager - Vexen</title>
+<link rel="stylesheet" href="fonts.css" />
+<style>
+  @page { size: Letter; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:       #14171c;
+    --ink-soft:  #333b46;
+    --ink-faint: #6f7886;
+    --rule:      #c9cfd8;
+    --rule-soft: #e6e9ee;
+    --label-bg:  #f4f6f8;
+    --accent:    #1d4ed8;
+  }
+
+  html, body { width: 8.5in; height: 11in; }
+  body {
+    font-family: 'IBM Plex Sans', Arial, sans-serif;
+    color: var(--ink);
+    font-size: 7.3pt;
+    line-height: 1.27;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { padding: 0.36in 0.42in 0.26in; height: 11in; display: flex; flex-direction: column; }
+
+  header { border-bottom: 1.4px solid var(--ink); padding-bottom: 5px; }
+  h1 {
+    font-family: 'Space Grotesk', sans-serif; font-size: 12.5pt; font-weight: 700;
+    letter-spacing: -0.01em; line-height: 1.15;
+  }
+  h1 span { font-weight: 500; color: var(--ink-soft); }
+  .sub {
+    display: flex; gap: 14px; margin-top: 3px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 6.4pt;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-faint);
+  }
+  .sub b { color: var(--ink); font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  tr { border-bottom: 1px solid var(--rule-soft); }
+  tr:last-child { border-bottom: none; }
+  th {
+    width: 1.18in; text-align: left; vertical-align: top;
+    background: var(--label-bg); border-right: 1px solid var(--rule-soft);
+    border-left: 2px solid #dfe3ea;
+    padding: 3.5px 7px 4.5px 6px;
+    font-family: 'Space Grotesk', sans-serif; font-size: 7.6pt; font-weight: 700;
+    line-height: 1.2; color: var(--ink);
+  }
+  th em {
+    display: block; font-family: 'IBM Plex Sans', sans-serif; font-style: normal;
+    font-size: 6.1pt; font-weight: 400; color: var(--ink-faint); margin-top: 2px; line-height: 1.25;
+  }
+  td { padding: 3.5px 0 4.5px 8px; vertical-align: top; color: var(--ink-soft); }
+  td ul { list-style: none; }
+  td li { padding-left: 8px; position: relative; margin-bottom: 1px; }
+  td li:before {
+    content: ""; position: absolute; left: 0.5px; top: 4.6px;
+    width: 3px; height: 3px; border-radius: 50%; background: #a8b0bd;
+  }
+  td li:last-child { margin-bottom: 0; }
+  b, strong { color: var(--ink); font-weight: 600; }
+  .mono { color: var(--ink); font-weight: 600; }
+  .flag { color: var(--accent); font-weight: 600; }
+
+  footer {
+    margin-top: auto; padding-top: 5px; border-top: 1px solid var(--rule);
+    display: flex; justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace; font-size: 6.2pt;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-faint);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Menlo Inception Idea One-Pager: Vexen <span>&mdash; the permission layer for AI agents</span></h1>
+    <div class="sub">
+      <div>Stage <b>Live, pre-revenue</b></div>
+      <div>Users <b>5,000+ in 2 months</b></div>
+      <div>Team <b>Solo founder</b></div>
+      <div>Capital raised <b>None</b></div>
+      <div>Launched <b>July 2026</b></div>
+    </div>
+  </header>
+
+  <table>
+    <tr>
+      <th>Why Now<em>Trends creating a ripe environment</em></th>
+      <td><ul>
+        <li>Agents only got <b>hands</b> in the last 18 months &mdash; tool use, MCP, computer use, agentic checkout &mdash; so the blast radius moved from wrong text to a wrong wire transfer.</li>
+        <li>Frameworks shipped <b>capability and skipped control</b>: an agent's limits live in its prompt, which is a suggestion, not a permission.</li>
+        <li>Accountability is arriving from outside: EU AI Act duties on human oversight and traceability; auditors and insurers now ask "who approved this action?" and there is no artefact to hand them.</li>
+        <li>Every prior computing era grew a permission layer (RACF &rarr; Active Directory &rarr; cloud IAM &rarr; Okta). <b>Agents have none, and the conventions are being set right now.</b></li>
+      </ul></td>
+    </tr>
+    <tr>
+      <th>Needs / Pain Points<em>Acute problems solved</em></th>
+      <td><ul>
+        <li><b>No external check before the action.</b> Nothing outside the agent verifies the limit, and nothing halts the side effect.</li>
+        <li><b>No approval primitive.</b> Hand-rolled approvals are replayable and amount-escalatable &mdash; worse than none, since a signed-looking record claims a human agreed.</li>
+        <li><b>No answer to "who allowed this?"</b> Evidence is scattered across model traces, vendor dashboards and app logs; reconstruction takes hours.</li>
+        <li><b>Result:</b> teams keep agents read-only and forfeit the ROI, or hand over a real key and absorb a tail risk they cannot cap, price or explain.</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <th>Target Customers<em>Who has the pain</em></th>
+      <td><ul>
+        <li><b>Today:</b> developers and small ops teams running purchasing, refund, payout, invoice and support agents &mdash; e-commerce and retail ops, fintech, health, dev-tooling teams.</li>
+        <li><b>User &ne; buyer.</b> The engineer integrates it; the person who answers for the blast radius signs (eng lead, head of ops, finance lead, CISO). Existing tools serve only the first persona.</li>
+        <li><b>Next:</b> agent platforms and vertical AI vendors that must offer permissions and approvals to their own customers, then regulated buyers in financial services, healthcare and government.</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <th>North Star<em>Ultimate solution &amp; vision</em></th>
+      <td><ul>
+        <li>One question answered continuously, everywhere: <b>what is this non-human actor allowed to do, right now, up to what magnitude, and who signed off?</b></li>
+        <li>Three steps: (1) the enforcement layer teams choose; (2) a <b>credential broker</b> issuing short-lived, scoped, single-purpose credentials so an agent physically cannot exceed its authority rather than being asked not to; (3) a <b>portable, verifiable statement of bounded authority</b> that travels between organisations &mdash; the missing primitive for agent-to-agent commerce, and for agent insurance.</li>
+        <li>Endgame: an <b>open standard</b> for agent authority, Vexen as reference implementation. Identity got OAuth, payments got card-network rules; agent authority has nothing.</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <th>Competitive Landscape<em>Market dynamics</em></th>
+      <td><ul>
+        <li><b>Real incumbent:</b> hand-rolled if-statements and internal approval scripts. Free, ubiquitous, and usually subtly wrong.</li>
+        <li><b>Observability</b> (LangSmith, Langfuse, Braintrust): records what happened, cannot block. <b>Guardrails</b> (Guardrails AI, NeMo): filter text, not actions. <b>Policy engines</b> (OPA, Cedar): powerful but developer-only, with no approvals, audit trail or non-technical UI. <b>Framework HITL:</b> pauses everything rather than only what matters.</li>
+        <li><b>Category is unowned:</b> no standard vocabulary, no pricing norm, no analyst quadrant. Plausible entrants: Okta/Auth0 from identity, Stripe from payments, and the agent frameworks bundling a "good enough" feature.</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <th>Gap / Value Proposition<em>How we differentiate</em></th>
+      <td><ul>
+        <li><b>Enforcement on the write path, not observation on the read path.</b> Removing Vexen means accepting an ungoverned system, and permission layers are almost never removed.</li>
+        <li><b>Deterministic by design:</b> 13-step default-deny engine, no I/O and no model anywhere in the enforcement path, so the same request always returns the same answer and the trace is the explanation.</li>
+        <li><b>The invariants competitors get wrong:</b> approvals single-use, TTL-bound, atomically claimed and scope-bound to permission + resource + amount to the cent; email actions POST-only and signed, so a link scanner cannot approve a $40,000 purchase; hash-verified audit; fail-closed SDK.</li>
+        <li><b>Serves both personas:</b> one decorator for the engineer; plain-English rules and two-tap phone approval, no login, for the accountable human.</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <th>Market Size<em>Where we play, how big</em></th>
+      <td><ul>
+        <li>Metered <b>per decision, not per seat</b>, so revenue scales with a customer's automation rather than their headcount &mdash; the rare software line item that grows as headcount falls.</li>
+        <li><b>Bottom-up SAM:</b> ~150k companies running action-taking agents by 2028 &times; ~$20k average annual spend &asymp; <b>$3B</b>; a nearer-term 50k &times; $20k &asymp; <b>$1B</b>.</li>
+        <li><b>Comparables:</b> IAM software &gt;$20B and growing; Okta alone ~$2.6B revenue. Agent authority is the same shape of layer, one level down, with more actions per customer than employees.</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <th>MVPs<em>Initial versions</em></th>
+      <td><ul>
+        <li><b>Already live</b> (5,000+ users, built solo in 2 months, no paid acquisition): decision API returning ALLOW / BLOCK / APPROVAL_REQUIRED with reason code and trace; 67 business-language permissions across 18 categories; plain-English rule authoring (model writes rules, never enforces); scope-bound single-use approvals; two-tap phone approval; hash-verified audit; fail-closed Python SDK; 10,639 configuration templates; 4-role RBAC. <span class="mono">Verified: 55/55 end-to-end checks, plus an independent 110/110 backend pass.</span></li>
+        <li><b>Next 6&ndash;12 months:</b> credential broker; TypeScript SDK, MCP gateway and native framework guards; published external pentest, SOC 2 Type I, SSO/SCIM; 10 design partners with agents in production; v0.1 of the open authority spec.</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <th>Business Models<em>Monetization &amp; GTM cost</em></th>
+      <td><ul>
+        <li><b>Freemium to usage-metered:</b> free decision allowance &rarr; self-serve $99&ndash;$999/mo by decision volume (~$7k ACV) &rarr; mid-market $12&ndash;25k &rarr; enterprise $50&ndash;100k, gated on SSO, SCIM, retention, pentest, SOC 2 and the broker.</li>
+        <li><b>Path:</b> ~$250k ARR by month 6; $1.2&ndash;1.5M by month 12. $10M at month 24 requires 100 enterprise @ $60k + 250 mid-market @ $14k + 250 self-serve @ $2.4k. <b>Base case $3&ndash;5M</b> unless platform embeds carry distribution.</li>
+        <li><b>GTM cost is low and proven:</b> content-led, no paid acquisition &mdash; 100,000+ users across five prior products. Spend is two hires (founding engineer, first GTM) plus ~$60&ndash;80k for SOC 2 and a published pentest.</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <th>Key Risks / Open Qs<em>Needs further testing</em></th>
+      <td><ul>
+        <li><span class="flag">No forcing function yet.</span> No job title owns "agent authority". Engineers feel a permission layer as roadmap friction, the exposed executive does not know the exposure exists, so it loses to "we'll add an if-statement" until an incident or auditor intervenes.</li>
+        <li><span class="flag">Broker unbuilt.</span> Today an agent can route around Vexen, so a rigorous buyer calls it a convention rather than a control &mdash; which is why it is the next thing built.</li>
+        <li><b>Open questions:</b> does <b>decisions per account</b> compound 30&ndash;40% QoQ (the whole expansion thesis)? Can a solo-founded vendor pass enterprise security review by month 12? Open standard vs. proprietary &mdash; what sequencing maximises adoption without commoditising the company?</li>
+        <li><b>Honest gaps:</b> no revenue, Python-only SDK, no SOC 2, and a solo founder who has never sold security through procurement. The first two hires target exactly those.</li>
+      </ul></td>
+    </tr>
+  </table>
+
+  <footer>
+    <div>Vexen &mdash; idea one-pager &mdash; August 2026</div>
+    <div>Page 1 of 1</div>
+  </footer>
+
+</div>
+</body>
+</html>

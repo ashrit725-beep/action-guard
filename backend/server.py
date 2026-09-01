@@ -144,6 +144,11 @@ DOWNLOADS = {
         "Vexen-Cap-Table.pdf",
         "application/pdf",
     ),
+    "one-pager": (
+        "docs/vexen-idea-one-pager.pdf",
+        "Vexen-Idea-One-Pager.pdf",
+        "application/pdf",
+    ),
 }
 
 
