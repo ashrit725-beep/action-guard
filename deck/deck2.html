@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Vexen — Pre-seed Deck</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="deck2.css">
+</head>
+<body>
+
+<!-- ============================================================ 01 COVER -->
+<section class="slide cover">
+  <div>
+    <div class="mark">VEX<i>EN</i></div>
+    <h1>The permission layer for AI&nbsp;agents.</h1>
+    <div class="tag">Allow &middot; Block &middot; Ask a human</div>
+  </div>
+  <div>
+    <p class="lede" style="max-width:64ch;margin-top:0">Agents now hold real credentials &mdash; they buy,
+    refund, pay out and write to production. Their limits live in a prompt, which is a suggestion, not a
+    permission. Vexen is the external check that runs <strong>before</strong> the action.</p>
+    <div class="row mt3">
+      <span class="chip sq">Deterministic engine</span>
+      <span class="chip sq">Approvals that cannot be replayed</span>
+      <span class="chip sq">Hash-verified audit</span>
+      <span class="chip sq">Fail-closed SDK</span>
+    </div>
+  </div>
+  <div class="metaline">
+    <div><div class="lbl">Stage</div><div class="v">Live, pre-revenue</div></div>
+    <div><div class="lbl">Users</div><div class="v p">5,000+ in 2 months</div></div>
+    <div><div class="lbl">Engagement</div><div class="v">300+ daily active</div></div>
+    <div><div class="lbl">Team</div><div class="v">Solo founder</div></div>
+    <div><div class="lbl">Raising</div><div class="v p">$750K pre-seed</div></div>
+  </div>
+</section>
+
+<!-- ============================================================ 02 SHIFT -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">The shift</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 02</div>
+  </div>
+  <div class="body">
+    <h1>We gave AI hands and forgot the keys.</h1>
+    <p class="lede">In the last eighteen months agents stopped suggesting and started acting. Tool use, MCP,
+    computer use, agentic checkout. The same model that wrote a bad paragraph last year can now move money
+    this year &mdash; and the blast radius moved with it.</p>
+    <div class="g3 mt5">
+      <div class="card">
+        <div class="lbl">Commerce</div>
+        <h2>Agents that buy</h2>
+        <p>Purchasing, restocking, ad spend, vendor payments &mdash; with a live card on file.</p>
+      </div>
+      <div class="card">
+        <div class="lbl">Money movement</div>
+        <h2>Agents that refund and pay out</h2>
+        <p>Support refunds, credits, payouts, invoice approvals, reconciliation.</p>
+      </div>
+      <div class="card">
+        <div class="lbl">Systems of record</div>
+        <h2>Agents that write to production</h2>
+        <p>Customer records, pricing, inventory, emails sent on the company's behalf.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot">Capability arrived. The control layer did not.</div>
+  <div class="snum">02</div>
+</section>
+
+<!-- ============================================================ 03 PROBLEM -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">The problem</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 03</div>
+  </div>
+  <div class="body">
+    <div class="split">
+      <div>
+        <h1 class="sm">A prompt is not a permission.</h1>
+        <p class="lede narrow">Today an agent's limits are a sentence someone typed into a system prompt.
+        Nothing outside the agent verifies it. Nothing halts the action. Nothing proves what happened.</p>
+        <div class="code sm mt4"><span class="c"># the entire control system, today</span>
+SYSTEM_PROMPT = <span class="s">"""</span>
+<span class="s">  You are a purchasing agent.</span>
+<span class="s">  Never spend more than $100.</span>
+<span class="s">  Always ask before refunding.</span>
+<span class="s">"""</span></div>
+      </div>
+      <div class="stack">
+        <div class="card bad">
+          <div class="lbl">Failure 1</div>
+          <h2>No external check</h2>
+          <p>The actor enforces its own limit. One prompt injection, one bad tool response, one hallucinated
+          total &mdash; and the constraint evaporates silently.</p>
+        </div>
+        <div class="card bad">
+          <div class="lbl">Failure 2</div>
+          <h2>No approval that holds</h2>
+          <p>Hand-rolled approvals are replayable and amount-escalatable. A $10 approval gets reused for
+          $10,000 &mdash; worse than no approval, because a signed-looking record now claims a human agreed.</p>
+        </div>
+        <div class="card bad">
+          <div class="lbl">Failure 3</div>
+          <h2>No answer to &ldquo;who allowed this?&rdquo;</h2>
+          <p>Evidence is scattered across model traces, vendor dashboards and application logs.
+          Reconstruction takes hours, and nothing is tamper-evident.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="snum">03</div>
+</section>
+
+<!-- ============================================================ 04 COST -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">What it costs today</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 04</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">Every team picks one of two bad options.</h1>
+    <div class="g2 mt5">
+      <div class="card bad">
+        <div class="lbl">Option A</div>
+        <h2>Keep the agent in read-only demo mode</h2>
+        <p class="mt2">Human confirms everything, or the agent never touches a real system. Safe, and it
+        forfeits the entire reason the agent was built. The automation ROI never arrives &mdash; expensive,
+        quietly, forever.</p>
+      </div>
+      <div class="card bad">
+        <div class="lbl">Option B</div>
+        <h2>Hand it a real key and hope</h2>
+        <p class="mt2">Full credentials, prompt-level limits, no external stop. A risk that cannot be capped,
+        priced, or explained to an auditor. Expensive once &mdash; and unexplainable afterwards.</p>
+      </div>
+    </div>
+    <div class="callout mt5">
+      <p>The blocker on agents in production is no longer capability. It is <strong>authority</strong> &mdash;
+      and authority is an infrastructure problem, not a model problem.</p>
+    </div>
+  </div>
+  <div class="snum">04</div>
+</section>
+
+<!-- ============================================================ 05 WHY NOW -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">Why now</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 05</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">Every computing generation grows a permission layer. This one hasn't.</h1>
+    <div class="tl">
+      <div class="c"><div class="bar"><b></b></div><div class="era">Mainframe</div><div class="who">RACF</div></div>
+      <div class="c"><div class="bar"><b></b></div><div class="era">Network</div><div class="who">Active Directory</div></div>
+      <div class="c"><div class="bar"><b></b></div><div class="era">Cloud</div><div class="who">IAM</div></div>
+      <div class="c"><div class="bar"><b></b></div><div class="era">SaaS identity</div><div class="who">Okta</div></div>
+      <div class="c now"><div class="bar"><b></b></div><div class="era">Autonomous agents</div><div class="who">Nothing</div></div>
+    </div>
+    <div class="g3 mt5">
+      <div class="card flat pad-sm">
+        <div class="lbl">Capability</div>
+        <p>Tool use, MCP and computer use shipped in ~18 months. Agent count per company is rising monthly;
+        each one needs credentials.</p>
+      </div>
+      <div class="card flat pad-sm">
+        <div class="lbl">Accountability arriving</div>
+        <p>EU AI Act duties on human oversight and traceability. Auditors and insurers now ask
+        &ldquo;who approved this action?&rdquo; &mdash; and there is no artefact to hand them.</p>
+      </div>
+      <div class="card accent pad-sm">
+        <div class="lbl p">The window</div>
+        <p>Conventions for agent authority are being set right now, by whoever ships first.
+        Identity took one cycle to standardise and never re-opened.</p>
+      </div>
+    </div>
+  </div>
+  <div class="snum">05</div>
+</section>
+
+<!-- ============================================================ 06 INSIGHT -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">The insight</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 06</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">You cannot verify intent. You can only constrain consequence.</h1>
+    <p class="lede">We never solved this for people by making people more trustworthy. We solved it with
+    external limits: spending authority, dual control, segregation of duties, audit trails. A completely
+    honest bank teller still cannot move ten million dollars alone.</p>
+    <div class="g2 mt5">
+      <div class="card warn">
+        <div class="lbl">Where the industry is looking</div>
+        <h2>Make the model more trustworthy</h2>
+        <p class="mt2">Alignment, better prompts, evals, guardrails, content filters. All useful. None of it
+        stops an action, and all of it puts a probabilistic system in charge of its own limits.</p>
+      </div>
+      <div class="card good">
+        <div class="lbl">Where the answer is</div>
+        <h2>Make the authority external and provable</h2>
+        <p class="mt2">Deterministic permissions the agent does not control, human approval on consequential
+        actions, and a tamper-evident record. Boring infrastructure, which is exactly why it works.</p>
+      </div>
+    </div>
+    <div class="callout mt4">
+      <p>The actor does not get to decide the limits of its own authority.</p>
+    </div>
+  </div>
+  <div class="snum">06</div>
+</section>
+
+<!-- ============================================================ 07 PRODUCT -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">The product</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 07</div>
+  </div>
+  <div class="body">
+    <div class="split">
+      <div>
+        <h1>One call. Three answers.</h1>
+        <p class="lede narrow">One decorator above the function that performs the side effect. Vexen decides
+        before anything happens &mdash; and if Vexen is unreachable, the function does not run.</p>
+        <div class="row mt4">
+          <span class="chip allow"><span class="dot"></span>Allow</span>
+          <span class="chip appr"><span class="dot"></span>Approval required</span>
+          <span class="chip block"><span class="dot"></span>Block</span>
+        </div>
+        <div class="row mt3">
+          <span class="chip sq">Fail-closed SDK</span>
+          <span class="chip sq">No agent-side trust</span>
+          <span class="chip sq">Reason code + trace</span>
+        </div>
+      </div>
+      <div>
+        <div class="code"><span class="k">@vexen.guard</span>(<span class="s">"purchase.create"</span>,
+             amount=<span class="k">lambda</span> o: o.total)
+<span class="k">def</span> place_order(order):
+    <span class="c"># money actually moves here</span>
+    stripe.PaymentIntent.create(...)
+
+<span class="c"># agent calls it</span>
+place_order(order)
+<span class="c"># -&gt; ALLOW          runs once</span>
+<span class="c"># -&gt; APPROVAL_REQ   halts, phone buzzes</span>
+<span class="c"># -&gt; BLOCK          never runs</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">Enforcement sits between the agent and the side effect &mdash; not in a dashboard afterwards.</div>
+  <div class="snum">07</div>
+</section>
+
+<!-- ============================================================ 08 ENGINE -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">How the decision works</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 08</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">Deterministic by design. No model in the enforcement path.</h1>
+    <p class="lede">A 13-step, default-deny evaluation with no I/O and no inference. The same request always
+    returns the same answer, and the trace <em>is</em> the explanation.</p>
+    <div class="steps mt4">
+      <div class="step"><div class="i">01 &mdash; 03</div><div class="t">Identify agent, workspace, action</div></div>
+      <div class="step"><div class="i">04 &mdash; 06</div><div class="t">Status, expiry, permission grant</div></div>
+      <div class="step"><div class="i">07 &mdash; 09</div><div class="t">Limits, resource and action scope</div></div>
+      <div class="step"><div class="i">10 &mdash; 12</div><div class="t">Org rules, approval state, claim</div></div>
+      <div class="step last"><div class="i">13</div><div class="t">Emit decision, reason code, trace</div></div>
+    </div>
+    <div class="g3 mt5">
+      <div class="card flat pad-sm">
+        <div class="lbl">Default deny</div>
+        <p>Anything not explicitly granted is refused. New capability is never silently permitted.</p>
+      </div>
+      <div class="card flat pad-sm">
+        <div class="lbl">AI writes rules, never enforces</div>
+        <p>Plain English becomes a schema-validated rule, shown back before it takes effect. The model never
+        touches the decision.</p>
+      </div>
+      <div class="card flat pad-sm">
+        <div class="lbl">Explainable by construction</div>
+        <p>Every answer carries a machine-readable reason code and the full evaluation path.</p>
+      </div>
+    </div>
+  </div>
+  <div class="snum">08</div>
+</section>
+
+<!-- ============================================================ 09 APPROVALS -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">The hard part</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 09</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">Approvals that actually hold.</h1>
+    <p class="lede">This is where most implementations quietly fail. A half-correct approval is worse than
+    none, because a signed-looking record then claims a human agreed.</p>
+    <table class="compact mt3">
+      <thead>
+        <tr><th style="width:23%">Invariant</th><th style="width:37%">What Vexen does</th><th>The attack it kills</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="h">Single use</td><td>Consumed on first use, atomically claimed at the database layer</td><td class="mono">Replay the same approval twice</td></tr>
+        <tr><td class="h">Time bound</td><td>Hard TTL; expiry is evaluated, not assumed</td><td class="mono">Approval reused days later</td></tr>
+        <tr><td class="h">Concurrency safe</td><td>Claim is atomic, never read-then-write</td><td class="mono">Two parallel calls both spend one approval</td></tr>
+        <tr><td class="h">Scope bound</td><td>Locked to permission, resource ID and amount to the cent</td><td class="mono">$10 approval used for $10,000</td></tr>
+        <tr><td class="h">Scan safe</td><td>Per-recipient signed links; the decision is POST-only</td><td class="mono">Corporate link scanner approves a $40,000 purchase</td></tr>
+        <tr><td class="h">Fail closed</td><td>If Vexen is unreachable the guarded function does not run</td><td class="mono">Outage becomes an open door</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="foot">Replay, amount escalation, concurrent claim and cross-tenant access are covered tests &mdash; not intentions.</div>
+  <div class="snum">09</div>
+</section>
+
+<!-- ============================================================ 10 APPROVAL UX -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">The human moment</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 10</div>
+  </div>
+  <div class="body">
+    <div class="split">
+      <div>
+        <h1 class="sm">Two taps. No login. Fifteen seconds.</h1>
+        <p class="lede narrow">The person accountable for the money is rarely the person who deployed the
+        agent. If approving is hard, they will disable the control &mdash; so approval had to be easier than
+        turning it off.</p>
+        <ul class="ticks mt4">
+          <li><b>No account needed.</b> Signed, per-recipient link. Nothing to install, nothing to remember.</li>
+          <li><b>Full context.</b> Which agent, what action, exact amount, why it paused.</li>
+          <li><b>Exactly once.</b> Approve and the action completes a single time, then the token is dead.</li>
+          <li><b>Email and web push.</b> Reaches a lock screen, not an inbox nobody reads.</li>
+        </ul>
+      </div>
+      <div class="phone">
+        <div class="hd">
+          <span class="chip appr"><span class="dot"></span>Approval required</span>
+          <span class="lbl">4m left</span>
+        </div>
+        <div class="lbl">Purchase &mdash; packaging supplier</div>
+        <div class="amt">$740.00</div>
+        <div class="meta">
+          Agent&nbsp;&nbsp;<b>ops-restock-01</b><br>
+          Limit&nbsp;&nbsp;<b>$500 per purchase</b><br>
+          Vendor&nbsp;&nbsp;<b>Northwind Packaging</b><br>
+          Time&nbsp;&nbsp;<b>03:14 local</b>
+        </div>
+        <div class="why">Over the per-purchase limit. Requires a human decision.</div>
+        <div class="btns">
+          <div class="btn ok">Approve once</div>
+          <div class="btn no">Decline</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="snum">10</div>
+</section>
+
+<!-- ============================================================ 11 AUDIT -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">Evidence</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 11</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">A record you can hand to someone who does not trust you.</h1>
+    <p class="lede">Every decision, grant, rule change and approval is written to a hash-verified log with an
+    integrity pass that reports exactly which rows were altered.</p>
+    <div class="g2 mt4">
+      <div>
+        <div class="code sm">GET /api/audit/verify
+
+{
+  <span class="k">"rows_checked"</span>: 41208,
+  <span class="k">"chain_valid"</span>:  <span class="s">true</span>,
+  <span class="k">"altered_rows"</span>: [],
+  <span class="k">"algorithm"</span>:    <span class="s">"sha-256"</span>
+}</div>
+      </div>
+      <div class="stack sm">
+        <div class="card flat pad-sm">
+          <div class="lbl">Tamper evident</div>
+          <p>Change one historical row and verification names it. Deterrence, not just record-keeping.</p>
+        </div>
+        <div class="card flat pad-sm">
+          <div class="lbl">One question, one place</div>
+          <p>"Who allowed this?" resolves in seconds &mdash; agent, permission, amount, approver, reason,
+          timestamp &mdash; instead of hours across three systems.</p>
+        </div>
+        <div class="card flat pad-sm">
+          <div class="lbl">Built for the buyer</div>
+          <p>The artefact an auditor, insurer or regulator will accept. This is the piece that turns a
+          developer tool into a purchase order.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="snum">11</div>
+</section>
+
+<!-- ============================================================ 12 ACTIVATION -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">Adoption</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 12</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">Governed in under a minute, by someone who has never seen an API key.</h1>
+    <p class="lede">Security products die from configuration burden. Nobody should design a permission posture
+    from a blank page.</p>
+    <div class="g4 mt4">
+      <div class="card flat pad-sm"><div class="stat"><div class="n sm p">10,639</div><div class="k">Ready-made agent configurations &mdash; 55 archetypes across 28 industries</div></div></div>
+      <div class="card flat pad-sm"><div class="stat"><div class="n sm">67</div><div class="k">Business-language permissions across 18 categories, with limits and expiry</div></div></div>
+      <div class="card flat pad-sm"><div class="stat"><div class="n sm">4</div><div class="k">Server-side roles enforced across 18 individually guarded endpoints</div></div></div>
+      <div class="card flat pad-sm"><div class="stat"><div class="n sm">1</div><div class="k">Line of code to enforce &mdash; one decorator above the function that acts</div></div></div>
+    </div>
+    <div class="callout mt5">
+      <p><strong>&ldquo;Any purchase over $100 needs a person to approve it.&rdquo;</strong> &nbsp;Typed in plain English,
+      converted into a schema-validated rule, shown back for confirmation before it takes effect &mdash; and
+      enforced deterministically, with no model in the path.</p>
+    </div>
+  </div>
+  <div class="snum">12</div>
+</section>
+
+<!-- ============================================================ 13 IN PRACTICE -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">In practice</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 13</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">$740 of packaging, at three in the morning.</h1>
+    <p class="lede">A restocking agent finds a supplier, builds a basket and calls the purchase function.
+    Its limit is $500. Nobody is awake.</p>
+    <div class="steps mt5">
+      <div class="step"><div class="i">Step 1</div><div class="t">Agent calls the guarded function with a $740 total</div></div>
+      <div class="step"><div class="i">Step 2</div><div class="t">Vexen returns APPROVAL_REQUIRED &mdash; over the per-purchase limit</div></div>
+      <div class="step"><div class="i">Step 3</div><div class="t">Execution halts. No charge, no partial state, no retry loop</div></div>
+      <div class="step"><div class="i">Step 4</div><div class="t">Ops lead's phone buzzes; two taps at 7am approve it</div></div>
+      <div class="step last"><div class="i">Step 5</div><div class="t">Purchase completes exactly once; replay is refused; record is hashed</div></div>
+    </div>
+    <div class="g2 mt5">
+      <div class="card bad pad-sm">
+        <div class="lbl">Without Vexen</div>
+        <p>Either the agent never had the authority to help at 3am, or it spent $740 and someone found out
+        from a bank alert.</p>
+      </div>
+      <div class="card good pad-sm">
+        <div class="lbl">With Vexen</div>
+        <p>The agent kept its usefulness, the company kept its limit, and there is a record naming who
+        allowed the exception.</p>
+      </div>
+    </div>
+  </div>
+  <div class="snum">13</div>
+</section>
+
+<!-- ============================================================ 14 TRACTION -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">Traction</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 14</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">Built solo in two months. Live, and past five thousand users.</h1>
+    <p class="lede">No paid acquisition, no outbound, no funding. Content-led, the same way my previous five
+    products reached 100,000+ users between them.</p>
+    <div class="funnel mt4">
+      <div class="fn"><div class="v p">5,000+</div><div class="k">Registered users, 2 months</div><div class="track"><i style="width:100%"></i></div></div>
+      <div class="fn"><div class="v">2,000+</div><div class="k">Monthly active &mdash; 40% of signups</div><div class="track"><i style="width:40%"></i></div></div>
+      <div class="fn"><div class="v">800+</div><div class="k">Weekly active</div><div class="track"><i style="width:16%"></i></div></div>
+      <div class="fn"><div class="v">300+</div><div class="k">Daily active &mdash; 15% DAU/MAU</div><div class="track"><i style="width:6%"></i></div></div>
+    </div>
+    <div class="g4 mt4">
+      <div class="card flat pad-sm"><div class="stat"><div class="n sm">10,000+</div><div class="k">Actions completed in product</div></div></div>
+      <div class="card flat pad-sm"><div class="stat"><div class="n sm">~12%</div><div class="k">Month-over-month user growth</div></div></div>
+      <div class="card flat pad-sm"><div class="stat"><div class="n sm a">55/55</div><div class="k">End-to-end regression checks passing</div></div></div>
+      <div class="card flat pad-sm"><div class="stat"><div class="n sm a">110/110</div><div class="k">Independent backend pass, no critical defects</div></div></div>
+    </div>
+  </div>
+  <div class="foot">Pre-revenue by choice &mdash; free while the enforcement guarantees are finished.</div>
+  <div class="snum">14</div>
+</section>
+
+<!-- ============================================================ 15 BEHAVIOUR -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">What the usage says</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 15</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">Users walk themselves toward production traffic.</h1>
+    <div class="steps mt4">
+      <div class="step"><div class="i">Observed 1</div><div class="t">Deploy a ready-made configuration</div></div>
+      <div class="step"><div class="i">Observed 2</div><div class="t">Write a rule in plain English and test it</div></div>
+      <div class="step"><div class="i">Observed 3</div><div class="t">Trigger an approval, approve it on a phone</div></div>
+      <div class="step"><div class="i">Observed 4</div><div class="t">Go looking for the SDK</div></div>
+      <div class="step last"><div class="i">Outcome</div><div class="t">Guarded calls in their own codebase</div></div>
+    </div>
+    <div class="g2 mt5">
+      <div class="card accent">
+        <div class="lbl p">What they ask for, unprompted</div>
+        <ul class="ticks mt2">
+          <li><b>TypeScript SDK</b> &mdash; Python-only is the current stopping point</li>
+          <li><b>MCP gateway and framework guards</b> &mdash; enforce where agents already run</li>
+          <li><b>&ldquo;Can I stop the agent bypassing this at all?&rdquo;</b> &mdash; a request for the credential broker</li>
+        </ul>
+      </div>
+      <div class="card flat">
+        <div class="lbl">Why that matters</div>
+        <p class="mt2">Nobody asks for a stricter constraint on themselves for a nice-to-have. Users are
+        pulling the product toward its <strong>more defensible</strong> version &mdash; the one where
+        enforcement is unavoidable rather than voluntary. That request is the roadmap, and it is the
+        difference between a tool and infrastructure.</p>
+      </div>
+    </div>
+  </div>
+  <div class="snum">15</div>
+</section>
+
+<!-- ============================================================ 16 BUSINESS MODEL -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">Business model</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 16</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">Priced per decision, not per seat.</h1>
+    <p class="lede">Revenue grows with how much a customer automates, not with how many people they employ
+    &mdash; one of the few software lines that expands as headcount falls.</p>
+    <table class="compact mt3">
+      <thead>
+        <tr><th style="width:17%">Tier</th><th class="num" style="width:16%">Price</th><th style="width:30%">Who and what triggers it</th><th>Gated on</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="h">Free</td><td class="num">$0</td><td>Developer installs the SDK, monthly decision allowance</td><td>Nothing &mdash; this is the adoption path</td></tr>
+        <tr><td class="h">Self-serve</td><td class="num">$99 &ndash; $999 / mo</td><td>Crosses the allowance, upgrades without a conversation</td><td>Decision volume, seats, retention</td></tr>
+        <tr><td class="h">Mid-market</td><td class="num">$12K &ndash; $25K / yr</td><td>A second team adopts it; someone asks for roles and reporting</td><td>RBAC, reporting, support</td></tr>
+        <tr class="us"><td class="h">Enterprise</td><td class="num">$50K &ndash; $100K / yr</td><td>Security review of an agent going to production</td><td>SSO, SCIM, retention, pentest, SOC&nbsp;2, credential broker</td></tr>
+      </tbody>
+    </table>
+    <div class="g3 mt4">
+      <div class="card flat pad-sm"><div class="lbl">Land</div><p>One engineer, one decorator, free tier.</p></div>
+      <div class="card flat pad-sm"><div class="lbl">Expand</div><p>More agents &rarr; more decisions &rarr; higher tier, with no new seats sold.</p></div>
+      <div class="card accent pad-sm"><div class="lbl p">Convert</div><p>The security review is the pricing event. The broker and SOC&nbsp;2 are what make it a line item.</p></div>
+    </div>
+  </div>
+  <div class="snum">16</div>
+</section>
+
+<!-- ============================================================ 17 PATH -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">Path to revenue</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 17</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">The plan, and the number that decides whether it works.</h1>
+    <div class="path mt3">
+      <div class="pc">
+        <div class="bar"><b></b></div>
+        <div class="q">Months 0 &ndash; 6</div>
+        <div class="arr">$250K ARR</div>
+        <ul>
+          <li>Credential broker shipped</li>
+          <li>TypeScript SDK, MCP gateway</li>
+          <li>10 design partners in production</li>
+          <li>First 25 paying accounts</li>
+        </ul>
+      </div>
+      <div class="pc">
+        <div class="bar"><b></b></div>
+        <div class="q">Months 7 &ndash; 12</div>
+        <div class="arr">$1.2 &ndash; 1.5M</div>
+        <ul>
+          <li>Published external pentest</li>
+          <li>SOC 2 Type I, SSO, SCIM</li>
+          <li>First 10 enterprise contracts</li>
+          <li>Founding engineer hired</li>
+        </ul>
+      </div>
+      <div class="pc">
+        <div class="bar"><b></b></div>
+        <div class="q">Months 13 &ndash; 18</div>
+        <div class="arr">$4M</div>
+        <ul>
+          <li>3 platform embeds &mdash; frameworks and vertical AI vendors</li>
+          <li>Open authority spec v0.1</li>
+          <li>Logos growing faster than headcount</li>
+        </ul>
+      </div>
+      <div class="pc">
+        <div class="bar"><b></b></div>
+        <div class="q">Months 19 &ndash; 24</div>
+        <div class="arr">$10M</div>
+        <ul>
+          <li>100 enterprise @ $60K = $6.0M</li>
+          <li>250 mid-market @ $14K = $3.5M</li>
+          <li>250 self-serve @ $2.4K = $0.6M</li>
+        </ul>
+      </div>
+    </div>
+    <div class="g2 mt4">
+      <div class="card accent pad-sm">
+        <div class="lbl p">The one metric that decides it</div>
+        <p><strong>Decisions per account per month.</strong> Users grow because I write; decisions grow only
+        if agents genuinely run behind it. Needs ~30&ndash;40% quarterly compounding &mdash; that is where
+        expansion revenue comes from.</p>
+      </div>
+      <div class="card warn pad-sm">
+        <div class="lbl">Said plainly</div>
+        <p>$10M in 24 months is the aggressive case. My base case is <strong>$3&ndash;5M</strong>, with $10M
+        reachable only if the platform embeds land and carry distribution.</p>
+      </div>
+    </div>
+  </div>
+  <div class="snum">17</div>
+</section>
+
+<!-- ============================================================ 18 MARKET -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">Market</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 18</div>
+  </div>
+  <div class="body">
+    <div class="split">
+      <div>
+        <h1 class="sm">Bought once. Removed almost never.</h1>
+        <p class="lede narrow">Permission layers are the stickiest line in the stack, because removing one
+        means choosing to run an ungoverned system. Nobody does that to save money.</p>
+        <ul class="ticks mt4">
+          <li><b>Bottom-up SAM.</b> ~150K companies running action-taking agents by 2028 &times; ~$20K average
+          annual spend &asymp; <strong>$3B</strong>. A nearer-term 50K &times; $20K &asymp; $1B.</li>
+          <li><b>Comparables.</b> IAM software is a $20B+ market; Okta alone is around $2.6B in revenue.
+          Agent authority is the same shape of layer, one level down.</li>
+          <li><b>Better unit of growth.</b> Every company has more actions than employees, and the ratio is
+          moving in one direction.</li>
+        </ul>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <div class="lbl">Where we play first</div>
+          <h2>Agents that touch money</h2>
+          <p class="mt2">E-commerce and retail ops, support refunds, finance payouts and invoices &mdash;
+          20 to 200 person companies with the exposure and no security team.</p>
+        </div>
+        <div class="card">
+          <div class="lbl">Then</div>
+          <h2>Platforms that resell governance</h2>
+          <p class="mt2">Agent frameworks and vertical AI vendors who must offer permissions and approvals to
+          their own customers, and would rather not build it badly.</p>
+        </div>
+        <div class="card accent">
+          <div class="lbl p">Then</div>
+          <h2>Regulated write paths</h2>
+          <p class="mt2">Financial services, healthcare and government &mdash; where the audit artefact is
+          not a preference, it is the condition of deployment.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="snum">18</div>
+</section>
+
+<!-- ============================================================ 19 COMPETITION -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">Competitive landscape</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 19</div>
+  </div>
+  <div class="body">
+    <h1 class="xs">Four categories point at this problem. None of them stop anything.</h1>
+    <table class="matrix compact mt3">
+      <thead>
+        <tr>
+          <th style="width:30%">Approach</th>
+          <th>Blocks the<br>action</th>
+          <th>Non-replayable<br>human approval</th>
+          <th>Tamper-evident<br>audit</th>
+          <th>Usable by a<br>non-engineer</th>
+          <th>No model in the<br>decision path</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Hand-rolled if-statements <span class="mono" style="color:var(--dim)">(the real incumbent)</span></td>
+          <td><span class="mk p">~</span></td><td><span class="mk n">&times;</span></td><td><span class="mk n">&times;</span></td><td><span class="mk n">&times;</span></td><td><span class="mk y">&check;</span></td></tr>
+        <tr><td>Agent observability <span class="mono" style="color:var(--dim)">(LangSmith, Langfuse)</span></td>
+          <td><span class="mk n">&times;</span></td><td><span class="mk n">&times;</span></td><td><span class="mk p">~</span></td><td><span class="mk p">~</span></td><td><span class="mk y">&check;</span></td></tr>
+        <tr><td>Guardrail libraries <span class="mono" style="color:var(--dim)">(text filtering)</span></td>
+          <td><span class="mk p">~</span></td><td><span class="mk n">&times;</span></td><td><span class="mk n">&times;</span></td><td><span class="mk n">&times;</span></td><td><span class="mk n">&times;</span></td></tr>
+        <tr><td>Policy engines <span class="mono" style="color:var(--dim)">(OPA, Cedar)</span></td>
+          <td><span class="mk y">&check;</span></td><td><span class="mk n">&times;</span></td><td><span class="mk n">&times;</span></td><td><span class="mk n">&times;</span></td><td><span class="mk y">&check;</span></td></tr>
+        <tr><td>Framework human-in-the-loop</td>
+          <td><span class="mk p">~</span></td><td><span class="mk p">~</span></td><td><span class="mk n">&times;</span></td><td><span class="mk p">~</span></td><td><span class="mk y">&check;</span></td></tr>
+        <tr class="us"><td>Vexen</td>
+          <td><span class="mk y">&check;</span></td><td><span class="mk y">&check;</span></td><td><span class="mk y">&check;</span></td><td><span class="mk y">&check;</span></td><td><span class="mk y">&check;</span></td></tr>
+      </tbody>
+    </table>
+    <div class="g2 mt3">
+      <div class="card flat pad-sm"><div class="lbl">Category is unowned</div><p>No standard vocabulary, no pricing norm, no analyst category. That is the opportunity and the risk.</p></div>
+      <div class="card flat pad-sm"><div class="lbl">Who could enter</div><p>Okta or Auth0 from identity, Stripe from payments, or a framework bundling a &ldquo;good enough&rdquo; feature. Speed and correctness are the defence.</p></div>
+    </div>
+  </div>
+  <div class="snum">19</div>
+</section>
+
+<!-- ============================================================ 20 MOAT -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">Why we win</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 20</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">Four defences, in increasing order of durability.</h1>
+    <div class="g2 mt4">
+      <div class="card">
+        <div class="lbl">1 &mdash; Position</div>
+        <h2>On the write path, not the read path</h2>
+        <p class="mt2">Observability sits beside the action; Vexen sits in front of it. Once a guarded call is
+        in production code, removing it is a decision to run ungoverned.</p>
+      </div>
+      <div class="card">
+        <div class="lbl">2 &mdash; Correctness</div>
+        <h2>Invariants that take real adversarial work</h2>
+        <p class="mt2">Atomic single-use claims, cent-level scope binding, scan-safe POST-only actions,
+        hash-verified audit, fail-closed defaults. Easy to demo, hard to actually get right.</p>
+      </div>
+      <div class="card">
+        <div class="lbl">3 &mdash; Both personas</div>
+        <h2>The engineer integrates, the accountable human signs</h2>
+        <p class="mt2">Policy engines serve only developers, so nobody with a budget can use them. Plain-English
+        rules and two-tap approvals put the buyer inside the product.</p>
+      </div>
+      <div class="card accent">
+        <div class="lbl p">4 &mdash; Standard</div>
+        <h2>The credential broker, then the artefact</h2>
+        <p class="mt2">Short-lived scoped credentials make bypass impossible. Then a portable, verifiable
+        statement of bounded authority that travels between companies &mdash; the primitive agent commerce and
+        agent insurance both need, and neither has.</p>
+      </div>
+    </div>
+  </div>
+  <div class="snum">20</div>
+</section>
+
+<!-- ============================================================ 21 ROADMAP -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">Roadmap</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 21</div>
+  </div>
+  <div class="body">
+    <h1 class="sm">From a check an agent chooses to make, to a constraint it cannot avoid.</h1>
+    <table class="compact mt3">
+      <thead><tr><th style="width:14%">When</th><th style="width:30%">Ship</th><th>Why it changes the business</th></tr></thead>
+      <tbody>
+        <tr><td class="h">Now &rarr; M3</td><td>Credential broker &mdash; short-lived, scoped, single-purpose credentials per approved action</td><td>Enforcement stops being voluntary. This is what supports a $60K contract instead of a $12K one.</td></tr>
+        <tr><td class="h">M2 &rarr; M5</td><td>TypeScript SDK, MCP gateway, native framework guards</td><td>Removes the top adoption blocker and puts enforcement where agents already run.</td></tr>
+        <tr><td class="h">M4 &rarr; M9</td><td>Published external penetration test, SOC 2 Type I, SSO and SCIM</td><td>Unlocks the enterprise security review, which is the pricing event.</td></tr>
+        <tr><td class="h">M6 &rarr; M12</td><td>10 design partners with agents in production, first paid contracts</td><td>Converts proven developer demand into a security budget line.</td></tr>
+        <tr class="us"><td class="h">M12 &rarr; M18</td><td>Open specification v0.1 for agent authority, Vexen as reference implementation</td><td>Turns a product into a convention &mdash; the version an incumbent structurally cannot start.</td></tr>
+      </tbody>
+    </table>
+    <div class="callout mt4">
+      <p>Today an agent can route around Vexen if its author wants to. The broker is first on the list for
+      exactly that reason &mdash; and it is the objection I would rather name than argue with.</p>
+    </div>
+  </div>
+  <div class="snum">21</div>
+</section>
+
+<!-- ============================================================ 22 TEAM -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">Team</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 22</div>
+  </div>
+  <div class="body">
+    <div class="split wide">
+      <div>
+        <h1 class="xs">Sixth product. Over 100,000 users before this one.</h1>
+        <p class="lede narrow sm">Ashrit Talluri &mdash; solo founder. Every product below was designed, built,
+        shipped and distributed by me, with no funding and no paid acquisition.</p>
+        <div class="mt3">
+          <div class="frow"><div class="nm">HealthLens</div><div class="ds">AI wellness platform unifying health data, food and voice analysis</div><div class="us">70,000+</div></div>
+          <div class="frow"><div class="nm">AI-Namo</div><div class="ds">Government document fraud verification &mdash; <strong>adopted by a local government</strong></div><div class="us">20,000+</div></div>
+          <div class="frow"><div class="nm">GreenGuide</div><div class="ds">Agricultural copilot for disease and contamination risk</div><div class="us">10,000+</div></div>
+          <div class="frow"><div class="nm">CerebroAegis</div><div class="ds">Health and safety guidance in plain language</div><div class="us">5,000+</div></div>
+          <div class="frow"><div class="nm">Vexen</div><div class="ds">The permission layer for AI agents &mdash; live, two months old</div><div class="us">5,000+</div></div>
+        </div>
+      </div>
+      <div class="stack sm">
+        <div class="card flat pad-sm">
+          <div class="lbl">Commercial</div>
+          <p>COO of The1550Formula, an AI-first SAT prep company &mdash; ran operations to ~$70K/month with
+          1,000+ students improving ~200 points. Perfect 1600 SAT myself.</p>
+        </div>
+        <div class="card flat pad-sm">
+          <div class="lbl">Distribution</div>
+          <p>Content-led only. Educational channel past 3M views &mdash; which is how you reach the engineer
+          the week before they ship an agent with a production key.</p>
+        </div>
+        <div class="card warn pad-sm">
+          <div class="lbl">The honest gap</div>
+          <p>Solo, and I have never sold a security control through enterprise procurement. Hire 1: a founding
+          engineer out of IAM, fraud or payments to own the broker. Hire 2: go-to-market.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="snum">22</div>
+</section>
+
+<!-- ============================================================ 23 RISKS -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">Risks, stated first</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 23</div>
+  </div>
+  <div class="body">
+    <h1 class="xs">The four things most likely to kill this.</h1>
+    <div class="rk mt4">
+      <div class="rrow">
+        <div class="r"><div class="lbl">Risk &mdash; no forcing function</div><p>No job title owns &ldquo;agent authority&rdquo;. Engineers feel a permission layer as friction; the exposed executive does not know the exposure exists.</p></div>
+        <div class="m"><div class="lbl">Mitigation</div><p>Sell the incident, not the feature: show a buyer what their agents are currently permitted to do. The audit artefact is what an auditor, insurer or regulator asks for &mdash; and those three are arriving.</p></div>
+      </div>
+      <div class="rrow">
+        <div class="r"><div class="lbl">Risk &mdash; bypassable today</div><p>The credential broker is designed, not built, so a rigorous buyer says this is a convention rather than a control and waits.</p></div>
+        <div class="m"><div class="lbl">Mitigation</div><p>It is the first thing this round funds, with a founding engineer out of IAM or payments hired to own it. Fair objection, dated answer.</p></div>
+      </div>
+      <div class="rrow">
+        <div class="r"><div class="lbl">Risk &mdash; incumbent bundling</div><p>Okta, Stripe or an agent framework ships a &ldquo;good enough&rdquo; governance feature.</p></div>
+        <div class="m"><div class="lbl">Mitigation</div><p>Bundled features stop at logging and pausing. Correct approval invariants, scan-safe delivery and tamper-evident audit are the hard 20% nobody bundles &mdash; and an open spec makes us the reference, not the competitor.</p></div>
+      </div>
+      <div class="rrow">
+        <div class="r"><div class="lbl">Risk &mdash; solo founder, pre-revenue</div><p>Concentration risk, no enterprise sales experience, and a business that has never charged anyone.</p></div>
+        <div class="m"><div class="lbl">Mitigation</div><p>55% of this round is two hires that close exactly those gaps. Runway is not the constraint: $50K in the bank against ~$200/month burn.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">Every gap here is one I would rather name than have found in diligence.</div>
+  <div class="snum">23</div>
+</section>
+
+<!-- ============================================================ 24 ASK -->
+<section class="slide">
+  <div class="top">
+    <div class="kicker">The ask</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 24</div>
+  </div>
+  <div class="body">
+    <div class="split">
+      <div>
+        <h1 class="sm">$750K pre-seed to make bypassing impossible.</h1>
+        <p class="lede narrow sm">Post-money SAFE, $8M cap, comfortable in a $7&ndash;10M range. No capital
+        raised to date, no investors, no process run. 100% founder-owned, nothing promised to anyone.</p>
+        <div class="bars mt4">
+          <div class="br">
+            <div class="hd"><div class="t">Two hires &mdash; founding engineer, first GTM</div><div class="p">55%</div></div>
+            <div class="track"><i style="width:55%"></i></div>
+            <div class="sub">IAM / fraud / payments engineer to own the credential broker; GTM to run ten design partners.</div>
+          </div>
+          <div class="br">
+            <div class="hd"><div class="t">Founder full-time and infrastructure</div><div class="p">25%</div></div>
+            <div class="track"><i class="a" style="width:25%"></i></div>
+            <div class="sub">The first product I want to be the only thing I do.</div>
+          </div>
+          <div class="br">
+            <div class="hd"><div class="t">Security and compliance</div><div class="p">20%</div></div>
+            <div class="track"><i class="w" style="width:20%"></i></div>
+            <div class="sub">Published external pentest, SOC 2 Type I, SSO and SCIM &mdash; the enterprise gate.</div>
+          </div>
+        </div>
+      </div>
+      <div class="stack sm">
+        <div class="card accent">
+          <div class="lbl p">What it buys, in milestones</div>
+          <ul class="ticks mt2">
+            <li>Credential broker in production</li>
+            <li>TypeScript SDK and MCP gateway shipped</li>
+            <li>10 design partners with agents live</li>
+            <li>First paid contracts, ~$1M ARR at M12</li>
+            <li>Open authority spec v0.1 published</li>
+          </ul>
+        </div>
+        <div class="card flat pad-sm">
+          <div class="lbl">Judge it yourself</div>
+          <p>Block a real agent and confirm the side effect never happened. Try to replay an approval,
+          escalate its amount, or alter an audit row. Hand the console to a non-engineer. Take the service
+          offline and watch the guarded call refuse to run.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="snum">24</div>
+</section>
+
+<!-- ============================================================ 25 CLOSE -->
+<section class="slide end">
+  <div class="top">
+    <div class="kicker">Vexen</div>
+    <div class="wm"><b>Vexen</b> <i>/</i> 25</div>
+  </div>
+  <div class="body">
+    <h1>Agents already have the keys.<br><span>Somebody has to hold the lock.</span></h1>
+    <div class="metaline mt5">
+      <div><div class="lbl">Live product</div><div class="v">5,000+ users, 300+ daily active</div></div>
+      <div><div class="lbl">Built by</div><div class="v">One person, two months</div></div>
+      <div><div class="lbl">Next</div><div class="v p">The credential broker</div></div>
+      <div><div class="lbl">Raising</div><div class="v p">$750K pre-seed</div></div>
+    </div>
+  </div>
+  <div class="snum">25</div>
+</section>
+
+</body>
+</html>
