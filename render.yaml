@@ -1,0 +1,32 @@
+# Render Blueprint: one Docker web service that serves both the API and the website.
+# Create it from the dashboard (New > Blueprint) or with the "Deploy to Render" button in README.md.
+# Step-by-step guide: docs/DEPLOY.md
+services:
+  - type: web
+    name: vexen
+    runtime: docker
+    plan: 0.5c-512mb            # $7 a month, always on. "free" works for a trial, but it sleeps after 15 minutes.
+    region: oregon              # choose the region closest to your MongoDB Atlas cluster
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit   # redeploys on every push to the branch
+    numInstances: 1             # keep at 1: rate limits and the email worker live inside the process
+    maxShutdownDelaySeconds: 120
+    envVars:
+      # Asked for once, when you create the Blueprint. Never write real values in this file.
+      - key: MONGO_URL          # MongoDB Atlas connection string: mongodb+srv://...
+        sync: false
+      - key: ANTHROPIC_API_KEY  # an Anthropic API key (sk-ant-...). The only AI key Vexen uses.
+        sync: false
+      # Not secrets, or generated for you.
+      - key: DB_NAME
+        value: vexen
+      - key: JWT_SECRET         # signs sign-in sessions and emailed links
+        generateValue: true
+      - key: API_KEY_PEPPER     # strengthens stored agent keys; set once, never change
+        generateValue: true
+      # Optional. Add from the service's Environment page when you need them (see docs/DEPLOY.md):
+      #   PUBLIC_APP_URL           your custom domain, e.g. https://vexen.example.com
+      #   SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, SMTP_FROM_EMAIL    email alerts
+      #   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT                      phone notifications

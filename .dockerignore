@@ -1,0 +1,40 @@
+# What is NOT sent to the Docker build. Keeps the image small and keeps private files out of it.
+
+# Version control, CI and the previous host
+.git
+.github
+.emergent
+
+# Fundraising, demo-making and generated reports: not part of the product
+deck
+memory
+.demovideo
+test_reports
+**/*.md
+design_guidelines.md
+plan.md
+
+# Tests are run in CI, not shipped
+tests
+backend/tests
+backend/.pytest_cache
+sdk
+
+# Local machine files, and anything that could hold a secret
+**/node_modules
+frontend/build
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
+.DS_Store
+
+# Investor material is not shipped. To publish it from the website, delete these three lines
+# AND set SERVE_INVESTOR_DOCS=true on the server.
+frontend/public/docs/vexen-pitch-deck.pdf
+frontend/public/docs/vexen-cap-table.pdf
+frontend/public/docs/vexen-idea-one-pager.pdf
