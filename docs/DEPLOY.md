@@ -112,11 +112,13 @@ Whichever host you pick, set `MONGO_URL`, `ANTHROPIC_API_KEY`, `JWT_SECRET` and 
 generates the last two for you; make them with `python3 backend/scripts/gen_secrets.py` and keep a copy). `DB_NAME`
 defaults to `vexen`.
 
-- **Railway:** New Project → Deploy from GitHub → add those variables → Settings → Generate Domain.
-  [`railway.json`](../railway.json) sets the health check. About $5 a month. Make sure there is one replica.
+- **Railway:** New Project → Deploy from GitHub → add those variables → **Settings → Networking → Generate
+  Domain**, then redeploy. The image needs an address to start and Railway only has one once a domain exists
+  (or set `PUBLIC_APP_URL` yourself). [`railway.json`](../railway.json) sets the health check. About $5 a month.
+  Make sure there is one replica.
 - **Anywhere else:** `docker build -t vexen .`, then `docker run -p 8000:10000 --env-file backend/.env vexen` with those
-  variables, and `PUBLIC_APP_URL` set to your site's address. The image refuses to start without it (Render and
-  Railway supply an address themselves), so a link in an email can never be built from a request.
+  variables, and `PUBLIC_APP_URL` set to your site's address. The image refuses to start without it (Render
+  supplies its own, Railway once a domain exists), so a link in an email can never be built from a request.
 
 ## Troubleshooting
 
@@ -132,5 +134,5 @@ defaults to `vexen`.
 | `/api/ready` → `"ai":"unverified"` | The startup check could not settle it: Anthropic was unreachable, or the key needs `ANTHROPIC_WORKSPACE_ID`. If AI requests fail, the server log says why (lines starting `Policy generator error` or `Assistant error`): no credit left, a spend limit reached, a missing workspace. |
 | `/api/ready` → `"ai":"model_unavailable"` | Anthropic answered "not found": either `ANTHROPIC_WORKSPACE_ID` is wrong or not usable by this key, or the key's workspace cannot use `claude-opus-5-5`. Check both in the Console. |
 | Emails link to the wrong address | Set `PUBLIC_APP_URL` to your site's address. |
-| Deploy log: `PUBLIC_APP_URL is not set` | Only outside Render and Railway: set `PUBLIC_APP_URL=https://your.domain`. |
+| Deploy log: `PUBLIC_APP_URL is not set` | Render never shows this. On Railway no domain exists yet: Generate Domain, then redeploy. Elsewhere set `PUBLIC_APP_URL=https://your.domain`. |
 | `413` "That request is too large" | A request body over 256 KB is refused to protect the small server. Raise it with `MAX_REQUEST_BYTES` if you really need to. |

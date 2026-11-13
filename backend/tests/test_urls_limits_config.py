@@ -160,6 +160,19 @@ def test_a_bad_database_address_is_caught(monkeypatch, mongo, fragment):
     assert any(fragment in p for p in problems)
 
 
+def test_stray_spaces_around_the_database_address_are_harmless(monkeypatch):
+    from vexen import db
+
+    _env(monkeypatch, **{**GOOD, "MONGO_URL": "  " + GOOD["MONGO_URL"] + " \r\n"})
+    assert config.check()[0] == []  # what the start-up check accepts...
+    seen = {}
+    monkeypatch.setattr(db, "AsyncIOMotorClient", lambda url, **kwargs: seen.setdefault("url", url))
+    monkeypatch.setattr(db, "_client", None)
+    db.get_client()
+    assert seen["url"] == GOOD["MONGO_URL"]  # ...is exactly what the client is given
+    monkeypatch.setattr(db, "_client", None)
+
+
 def test_a_guessable_signing_secret_is_refused(monkeypatch):
     _env(monkeypatch, **{**GOOD, "JWT_SECRET": "short"})
     problems, _ = config.check()

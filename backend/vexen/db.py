@@ -15,7 +15,7 @@ def get_client() -> AsyncIOMotorClient:
     global _client
     if _client is None:
         _client = AsyncIOMotorClient(
-            os.environ["MONGO_URL"],
+            os.environ["MONGO_URL"].strip(),
             maxPoolSize=200,
             minPoolSize=5,
             serverSelectionTimeoutMS=8000,
