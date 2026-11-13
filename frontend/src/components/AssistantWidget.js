@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
+import { useAssistantAvailable } from "@/lib/assistant";
 import { sessionStore } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
@@ -106,7 +107,7 @@ function AnswerText({ content }) {
   return <div className="space-y-1">{blocks}</div>;
 }
 
-export const AssistantWidget = () => {
+const AssistantPanel = () => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState(loadSaved);
@@ -142,10 +143,15 @@ export const AssistantWidget = () => {
       setSending(true);
       setFailed(null);
       try {
-        const { data } = await api.post("/assistant/chat", {
-          messages: next.map((m) => ({ role: m.role, content: m.content })),
-          page: pageName(location.pathname),
-        });
+        const { data } = await api.post(
+          "/assistant/chat",
+          {
+            messages: next.map((m) => ({ role: m.role, content: m.content })),
+            page: pageName(location.pathname),
+          },
+          // the server gives up on a slow answer after about 80 seconds
+          { timeout: 100000 },
+        );
         setMessages((prev) => [...prev, { role: "assistant", content: data.reply }].slice(-14));
         if (Array.isArray(data.suggestions) && data.suggestions.length) {
           setSuggestions(data.suggestions);
@@ -369,4 +375,11 @@ export const AssistantWidget = () => {
       </Sheet>
     </>
   );
+};
+
+// The helper only appears when the server has a working Anthropic key, so nobody
+// is offered a button that cannot answer.
+export const AssistantWidget = () => {
+  const available = useAssistantAvailable();
+  return available ? <AssistantPanel /> : null;
 };

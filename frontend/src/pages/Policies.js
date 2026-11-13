@@ -171,7 +171,8 @@ export default function Policies() {
     setGenerating(true);
     setDraft(null);
     try {
-      const { data } = await api.post("/policies/generate", { prompt: value });
+      // the server gives up on a slow answer after about 90 seconds
+      const { data } = await api.post("/policies/generate", { prompt: value }, { timeout: 120000 });
       setDraft(data.rule);
       toast.success("Here is what I understood", {
         description: "Check it over before you save it.",

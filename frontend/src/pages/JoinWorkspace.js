@@ -203,10 +203,10 @@ export default function JoinWorkspace() {
               id="join-password"
               type="password"
               required
-              minLength={8}
+              minLength={10}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 8 characters"
+              placeholder="At least 10 characters"
               autoComplete="new-password"
               data-testid="join-password-input"
             />

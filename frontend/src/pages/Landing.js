@@ -258,6 +258,12 @@ function DemoDialog({ open, onOpenChange }) {
 export default function Landing() {
   const [demoOpen, setDemoOpen] = useState(false);
 
+  // Footer links such as /#how-it-works arrive here before the page has rendered.
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (id) document.getElementById(id)?.scrollIntoView();
+  }, []);
+
   return (
     <div>
       {/* Hero */}
@@ -311,7 +317,11 @@ export default function Landing() {
           </div>
 
           {/* Product diagram */}
-          <div className="vx-card vx-grid-bg relative overflow-hidden p-5 sm:p-6" data-testid="landing-flow-diagram">
+          <div
+            id="how-it-works"
+            className="vx-card vx-grid-bg relative scroll-mt-24 overflow-hidden p-5 sm:p-6"
+            data-testid="landing-flow-diagram"
+          >
             <div className="relative">
               <div className="flex items-stretch gap-2">
                 <FlowNode label="Your AI agent" sub="wants to do something" icon={Layers} />

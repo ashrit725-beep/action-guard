@@ -93,17 +93,17 @@ export default function MarketingLayout() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    to="/app/guide"
+                  <a
+                    href="/#how-it-works"
                     className="text-muted-foreground transition-colors hover:text-foreground"
                   >
                     How it works
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link to="/app/developers" className="text-muted-foreground transition-colors hover:text-foreground">
+                  <a href="/api/docs" className="text-muted-foreground transition-colors hover:text-foreground">
                     For developers
-                  </Link>
+                  </a>
                 </li>
               </ul>
             </div>

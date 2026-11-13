@@ -962,8 +962,8 @@ export default function Settings() {
               </Table>
             </div>
             <p className="border-t border-border px-5 py-3 text-xs text-muted-foreground">
-              Inviting other people is coming soon. Your workspace and everything in it is completely
-              separate from every other workspace on Vexen.
+              To invite someone, open the Team page. Your workspace and everything in it is
+              completely separate from every other workspace on Vexen.
             </p>
           </SectionCard>
         </TabsContent>

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/accordion";
 import { Explainer, PageHeader, SectionCard } from "@/components/Common";
 import { api } from "@/lib/api";
+import { useAssistantAvailable } from "@/lib/assistant";
 import { cn } from "@/lib/utils";
 
 const ANSWERS = [
@@ -93,6 +94,7 @@ const FAQS = [
 
 export default function Guide() {
   const [progress, setProgress] = useState(null);
+  const assistantAvailable = useAssistantAvailable();
 
   const load = useCallback(async () => {
     try {
@@ -360,15 +362,17 @@ export default function Guide() {
             </AccordionItem>
           ))}
         </Accordion>
-        <p
-          className="mt-4 rounded-lg border border-border bg-muted/40 p-3.5 text-sm leading-relaxed text-muted-foreground"
-          data-testid="guide-assistant-hint"
-        >
-          Still stuck? Tap{" "}
-          <span className="font-medium text-foreground">Ask for help</span> in the bottom corner of
-          any page. It can see your agents, your rules and anything that got stopped, so you can ask
-          things like &ldquo;why was my agent blocked?&rdquo; in your own words.
-        </p>
+        {assistantAvailable && (
+          <p
+            className="mt-4 rounded-lg border border-border bg-muted/40 p-3.5 text-sm leading-relaxed text-muted-foreground"
+            data-testid="guide-assistant-hint"
+          >
+            Still stuck? Tap{" "}
+            <span className="font-medium text-foreground">Ask for help</span> in the bottom corner of
+            any page. It can see your agents, your rules and anything that got stopped, so you can ask
+            things like &ldquo;why was my agent blocked?&rdquo; in your own words.
+          </p>
+        )}
       </SectionCard>
     </div>
   );
