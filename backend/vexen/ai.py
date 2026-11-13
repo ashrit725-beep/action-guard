@@ -1,30 +1,31 @@
 """
 Natural-language -> structured Vexen policy rule generator.
 
-Uses Anthropic Claude with a forced tool schema so the model can only reply with
-a structurally valid policy rule.  The result is then validated again in Python:
-if anything is off we fail CLOSED (raise) rather than saving a policy we do not
-fully understand.
+Uses Anthropic Claude with structured outputs (a JSON schema the response must
+match) so the model can only reply with a structurally valid policy rule.  The
+result is then validated again in Python: if anything is off we fail CLOSED
+(raise) rather than saving a policy we do not fully understand.
 """
 from __future__ import annotations
 
 import json
+import logging
 import os
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 from .catalog import PERMISSION_CATALOG, POLICY_EFFECTS
 
-ANTHROPIC_MODELS = [
-    "claude-sonnet-4-6",
-    "claude-sonnet-4-5-20250929",
-    "claude-3-7-sonnet-latest",
-    "claude-3-5-sonnet-latest",
-]
-OPENAI_MODELS = ["gpt-4.1-mini", "gpt-4o-mini"]
+logger = logging.getLogger("vexen.ai")
+
+MODEL = "claude-opus-5-5"
+EFFORT = "medium"
+# If a safety classifier declines the request, Anthropic re-runs it on its
+# recommended fallback model inside the same call instead of failing it.
+FALLBACK_BETA = "server-side-fallback-2026-07-01"
 
 _PERMISSION_KEYS = [p["key"] for p in PERMISSION_CATALOG]
 
-POLICY_TOOL_SCHEMA: Dict[str, Any] = {
+POLICY_SCHEMA: Dict[str, Any] = {
     "type": "object",
     "properties": {
         "name": {"type": "string", "description": "Short imperative policy title, max 70 chars."},
@@ -51,10 +52,11 @@ POLICY_TOOL_SCHEMA: Dict[str, Any] = {
         "max_amount": {"type": "number", "description": "For LIMIT: the cap in USD."},
         "max_ttl_minutes": {"type": "integer", "description": "For MAX_TTL: maximum grant lifetime in minutes."},
         "priority": {"type": "integer", "description": "10-99. Lower runs first. Use 10-19 for denies, 20-29 for approvals, 30+ for limits."},
-        "rationale": {"type": "string", "description": "Why this rule is the correct interpretation of the request."},
+        "rationale": {"type": "string", "description": "One or two plain sentences for the administrator on why this rule matches the request (or, at low confidence, why it cannot)."},
         "confidence": {"type": "number", "description": "0-1 confidence that this rule faithfully captures the request."},
     },
     "required": ["name", "description", "effect", "permissions", "priority", "rationale", "confidence"],
+    "additionalProperties": False,
 }
 
 SYSTEM_PROMPT = """You are the policy compiler for Vexen, a security platform that controls what AI agents are allowed to do.
@@ -62,7 +64,6 @@ SYSTEM_PROMPT = """You are the policy compiler for Vexen, a security platform th
 You convert a plain-English security requirement written by an administrator into exactly ONE structured Vexen policy rule.
 
 Hard rules:
-- You MUST call the `emit_policy` tool exactly once. Never answer in prose.
 - Only use permission keys from the catalog provided by the user message. If the request mentions something with no matching key, choose the closest catalog keys and lower your confidence.
 - Prefer the most restrictive effect that satisfies the request. "never", "cannot", "must not", "block" => DENY.
 - "needs sign-off", "ask me first", "requires approval", "only with permission" => REQUIRE_APPROVAL.
@@ -186,77 +187,47 @@ def _anthropic_call(prompt: str) -> Tuple[Dict[str, Any], str]:
     if not api_key:
         raise PolicyGenerationError("Policy generator is not configured.")
     client = anthropic.Anthropic(api_key=api_key, max_retries=1, timeout=45.0)
-    tools = [{
-        "name": "emit_policy",
-        "description": "Emit exactly one structured Vexen policy rule.",
-        "input_schema": POLICY_TOOL_SCHEMA,
-    }]
     user = (
         "Permission catalog:\n" + _catalog_block()
         + "\n\nAdministrator's requirement:\n\"\"\"\n" + prompt.strip() + "\n\"\"\"\n\n"
         "Emit the single Vexen policy rule that enforces this."
     )
-    last_error: Optional[Exception] = None
-    for model in ANTHROPIC_MODELS:
-        try:
-            resp = client.messages.create(
-                model=model,
-                max_tokens=1200,
-                system=SYSTEM_PROMPT,
-                tools=tools,
-                tool_choice={"type": "tool", "name": "emit_policy"},
-                messages=[{"role": "user", "content": user}],
-            )
-            for block in resp.content:
-                if getattr(block, "type", None) == "tool_use":
-                    return dict(block.input), f"anthropic:{model}"
-            raise PolicyGenerationError("Model did not emit a policy.")
-        except PolicyGenerationError:
-            raise
-        except Exception as exc:  # noqa: BLE001 - try the next model id
-            last_error = exc
-            continue
-    raise PolicyGenerationError(f"Policy generator unavailable: {type(last_error).__name__}")
+    try:
+        resp = client.beta.messages.create(
+            model=MODEL,
+            max_tokens=16000,  # thinking is always on and counts toward this
+            system=SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user}],
+            output_config={
+                "effort": EFFORT,
+                "format": {"type": "json_schema", "schema": POLICY_SCHEMA},
+            },
+            betas=[FALLBACK_BETA],
+            fallbacks="default",
+        )
+    except anthropic.RateLimitError as exc:
+        logger.warning("Policy generator rate limited (request %s)", exc.request_id)
+        raise PolicyGenerationError("The policy generator is busy. Try again in a minute.") from exc
+    except anthropic.APIStatusError as exc:
+        logger.error("Policy generator error %s (request %s): %s",
+                     exc.status_code, exc.request_id, exc.message)
+        raise PolicyGenerationError(f"Policy generator unavailable: {type(exc).__name__}") from exc
+    except anthropic.APIConnectionError as exc:
+        logger.error("Policy generator could not reach Anthropic: %s", exc)
+        raise PolicyGenerationError(f"Policy generator unavailable: {type(exc).__name__}") from exc
 
-
-def _openai_call(prompt: str) -> Tuple[Dict[str, Any], str]:
-    from openai import OpenAI
-
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise PolicyGenerationError("Policy generator fallback is not configured.")
-    client = OpenAI(api_key=api_key, max_retries=1, timeout=45.0)
-    tools = [{
-        "type": "function",
-        "function": {
-            "name": "emit_policy",
-            "description": "Emit exactly one structured Vexen policy rule.",
-            "parameters": POLICY_TOOL_SCHEMA,
-        },
-    }]
-    user = (
-        "Permission catalog:\n" + _catalog_block()
-        + "\n\nAdministrator's requirement:\n\"\"\"\n" + prompt.strip() + "\n\"\"\""
-    )
-    last_error: Optional[Exception] = None
-    for model in OPENAI_MODELS:
-        try:
-            resp = client.chat.completions.create(
-                model=model,
-                messages=[{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user}],
-                tools=tools,
-                tool_choice={"type": "function", "function": {"name": "emit_policy"}},
-            )
-            calls = resp.choices[0].message.tool_calls or []
-            if not calls:
-                raise PolicyGenerationError("Model did not emit a policy.")
-            return json.loads(calls[0].function.arguments), f"openai:{model}"
-        except PolicyGenerationError:
-            raise
-        except Exception as exc:  # noqa: BLE001
-            last_error = exc
-            continue
-    raise PolicyGenerationError(f"Policy generator unavailable: {type(last_error).__name__}")
+    if resp.stop_reason == "refusal":
+        raise PolicyGenerationError(
+            "The AI model's safety checks declined that request, so no rule was drafted. "
+            "Try describing the exact permission and the exact restriction."
+        )
+    if resp.stop_reason != "end_turn":
+        raise PolicyGenerationError("Model did not emit a complete policy.")
+    try:
+        raw = json.loads("".join(b.text for b in resp.content if b.type == "text"))
+    except ValueError as exc:
+        raise PolicyGenerationError("Model did not emit a policy.") from exc
+    return raw, f"anthropic:{resp.model}"
 
 
 def generate_policy(prompt: str) -> Dict[str, Any]:
@@ -267,19 +238,12 @@ def generate_policy(prompt: str) -> Dict[str, Any]:
     if len(text) > 2000:
         raise PolicyGenerationError("Policy description is too long. Keep it under 2000 characters.")
 
-    errors: List[str] = []
-    for backend in (_anthropic_call, _openai_call):
-        try:
-            raw, model = backend(text)
-        except PolicyGenerationError as exc:
-            errors.append(str(exc))
-            continue
-        rule = _validate(raw)
-        rule["generated_by"] = model
-        rule["source_prompt"] = text
-        return rule
-    raise PolicyGenerationError(errors[0] if errors else "Policy generator unavailable.")
+    raw, model = _anthropic_call(text)
+    rule = _validate(raw)
+    rule["generated_by"] = model
+    rule["source_prompt"] = text
+    return rule
 
 
 def generator_available() -> bool:
-    return bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("OPENAI_API_KEY"))
+    return bool(os.environ.get("ANTHROPIC_API_KEY"))

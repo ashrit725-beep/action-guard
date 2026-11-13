@@ -548,14 +548,8 @@ async def assistant_chat(payload: AssistantChatIn,
     if not cleaned:
         raise HTTPException(status_code=422, detail="Ask a question first.")
 
-    def _run() -> Tuple[str, str]:
-        try:
-            return assistant._anthropic_reply(system, cleaned)
-        except assistant.AssistantError:
-            return assistant._openai_reply(system, cleaned)
-
     try:
-        reply, model = await run_in_threadpool(_run)
+        reply, model = await run_in_threadpool(assistant._anthropic_reply, system, cleaned)
     except assistant.AssistantError as exc:
         raise HTTPException(
             status_code=503,

@@ -9,16 +9,17 @@ It never sees passwords, API keys, or another workspace's data.
 """
 from __future__ import annotations
 
+import logging
 import os
 from typing import Any, Dict, List, Optional, Tuple
 
-ANTHROPIC_MODELS = [
-    "claude-sonnet-4-6",
-    "claude-sonnet-4-5-20250929",
-    "claude-3-7-sonnet-latest",
-    "claude-3-5-sonnet-latest",
-]
-OPENAI_MODELS = ["gpt-4.1-mini", "gpt-4o-mini"]
+logger = logging.getLogger("vexen.assistant")
+
+MODEL = "claude-opus-5-5"
+EFFORT = "low"
+# If a safety classifier declines the request, Anthropic re-runs it on its
+# recommended fallback model inside the same call instead of failing it.
+FALLBACK_BETA = "server-side-fallback-2026-07-01"
 
 MAX_TURNS = 12
 MAX_CHARS = 1200
@@ -109,6 +110,10 @@ def _clean_history(messages: List[Dict[str, Any]]) -> List[Dict[str, str]]:
     # a conversation must start with the person speaking
     while out and out[0]["role"] != "user":
         out.pop(0)
+    # ...and end with them: a trailing assistant turn is a prefill, which the
+    # model rejects
+    while out and out[-1]["role"] != "user":
+        out.pop()
     return out
 
 
@@ -119,44 +124,29 @@ def _anthropic_reply(system: str, history: List[Dict[str, str]]) -> Tuple[str, s
     if not api_key:
         raise AssistantError("not configured")
     client = anthropic.Anthropic(api_key=api_key, max_retries=1, timeout=40.0)
-    last: Optional[Exception] = None
-    for model in ANTHROPIC_MODELS:
-        try:
-            resp = client.messages.create(
-                model=model, max_tokens=700, system=system, messages=history,
-            )
-            text = " ".join(
-                getattr(b, "text", "") for b in resp.content if getattr(b, "type", "") == "text"
-            ).strip()
-            if text:
-                return text, f"anthropic:{model}"
-            last = AssistantError("empty reply")
-        except Exception as exc:  # noqa: BLE001 - try the next model id
-            last = exc
-    raise AssistantError(str(last)[:120])
-
-
-def _openai_reply(system: str, history: List[Dict[str, str]]) -> Tuple[str, str]:
-    from openai import OpenAI
-
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise AssistantError("no fallback configured")
-    client = OpenAI(api_key=api_key, max_retries=1, timeout=40.0)
-    last: Optional[Exception] = None
-    for model in OPENAI_MODELS:
-        try:
-            resp = client.chat.completions.create(
-                model=model, max_tokens=700,
-                messages=[{"role": "system", "content": system}] + history,
-            )
-            text = (resp.choices[0].message.content or "").strip()
-            if text:
-                return text, f"openai:{model}"
-            last = AssistantError("empty reply")
-        except Exception as exc:  # noqa: BLE001
-            last = exc
-    raise AssistantError(str(last)[:120])
+    try:
+        resp = client.beta.messages.create(
+            model=MODEL,
+            max_tokens=4096,  # thinking is always on and counts toward this
+            system=system,
+            messages=history,
+            output_config={"effort": EFFORT},
+            betas=[FALLBACK_BETA],
+            fallbacks="default",
+        )
+    except anthropic.APIStatusError as exc:
+        logger.warning("Assistant error %s (request %s): %s",
+                       exc.status_code, exc.request_id, exc.message)
+        raise AssistantError(f"api error {exc.status_code}") from exc
+    except anthropic.APIConnectionError as exc:
+        logger.warning("Assistant could not reach Anthropic: %s", exc)
+        raise AssistantError("connection error") from exc
+    if resp.stop_reason == "refusal":
+        raise AssistantError("declined")
+    text = " ".join(b.text for b in resp.content if b.type == "text").strip()
+    if not text:
+        raise AssistantError("empty reply")
+    return text, f"anthropic:{resp.model}"
 
 
 def follow_ups(snapshot: str) -> List[str]:
@@ -194,8 +184,5 @@ async def answer(db, *, org_id: str, user_name: str, messages: List[Dict[str, An
         + snapshot
         + (f"\n\nThey are currently looking at: {page}" if page else "")
     )
-    try:
-        text, model = _anthropic_reply(system, history)
-    except AssistantError:
-        text, model = _openai_reply(system, history)
+    text, model = _anthropic_reply(system, history)
     return {"reply": text, "model": model, "suggestions": follow_ups(snapshot)}
