@@ -15,9 +15,18 @@ import asyncio
 import bcrypt
 import jwt
 
+def _env_int(name: str, default: int) -> int:
+    """A blank or malformed value in a hosting dashboard falls back instead of crashing at import."""
+    try:
+        value = int((os.environ.get(name) or "").strip() or default)
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
 JWT_ALGORITHM = "HS256"
-ACCESS_TOKEN_MINUTES = int(os.environ.get("ACCESS_TOKEN_MINUTES", "60"))
-REFRESH_TOKEN_DAYS = int(os.environ.get("REFRESH_TOKEN_DAYS", "30"))
+ACCESS_TOKEN_MINUTES = _env_int("ACCESS_TOKEN_MINUTES", 60)
+REFRESH_TOKEN_DAYS = _env_int("REFRESH_TOKEN_DAYS", 30)
 
 KEY_PREFIX = "vex_sk_live_"
 

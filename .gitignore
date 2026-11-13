@@ -88,3 +88,7 @@ frontend/node_modules/.cache/default-development/0.pack
 credentials.json
 *.key
 .credentials
+
+# Examples that are safe to commit (must come after the patterns above)
+!.env.example
+!backend/.env.example

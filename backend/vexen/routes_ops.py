@@ -1,10 +1,12 @@
 """Dashboard, simulator, developer API, public authorization API, org settings, contact."""
 from __future__ import annotations
 
+import os
 from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
+from . import llm, mailer
 from .catalog import permission_meta
 from .db import clean, clean_many, get_db
 from .deps import (
@@ -32,7 +34,9 @@ from .service import (
 )
 
 router = APIRouter(prefix="/api", tags=["ops"])
-public_router = APIRouter(prefix="/api/v1", tags=["public-api"])
+# strict_content_type=False: agents authenticate with a header, not a cookie, so there is nothing for a
+# browser to be tricked into sending, and a client that forgets "Content-Type: application/json" still works.
+public_router = APIRouter(prefix="/api/v1", tags=["public-api"], strict_content_type=False)
 
 
 def _iso(value: Any) -> Optional[str]:
@@ -517,6 +521,22 @@ async def submit_contact(payload: ContactMessageIn, request: Request) -> Dict[st
         "created_at": now_utc(),
         "status": "new",
     })
+    # Tell whoever runs this site. Optional (CONTACT_NOTIFY_EMAIL, and email must be set up);
+    # the message is saved either way, and a mail problem can never fail the visitor's request.
+    notify = (os.environ.get("CONTACT_NOTIFY_EMAIL") or "").strip()
+    try:
+        # A global cap, so a flood of form posts can neither fill the outbox ahead of approval
+        # alerts nor use up the mailbox's daily allowance. The message is still saved above.
+        rate_limit("contact-notify", limit=20, window_seconds=3600)
+    except HTTPException:
+        notify = ""
+    if notify:
+        subject, text, html = mailer.contact_message_email(
+            reference=reference, name=payload.name.strip(), email=payload.email.lower().strip(),
+            company=(payload.company or "").strip() or None, topic=payload.topic or "general",
+            message=payload.message.strip())
+        await mailer.queue_email(db, to=notify, subject=subject, text=text, html=html,
+                                 kind="contact_message", dedupe_key=f"contact:{reference}")
     return {
         "ok": True,
         "reference": reference,
@@ -525,12 +545,16 @@ async def submit_contact(payload: ContactMessageIn, request: Request) -> Dict[st
     }
 
 
+@router.get("/assistant/status")
+async def assistant_status(principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
+    """Lets the app hide the helper when the server has no working AI key."""
+    return {"available": llm.available()}
+
+
 @router.post("/assistant/chat")
 async def assistant_chat(payload: AssistantChatIn,
                          principal: Principal = Depends(current_principal)) -> Dict[str, Any]:
     """Answer a question about this workspace in plain language."""
-    from starlette.concurrency import run_in_threadpool
-
     from . import assistant
 
     rate_limit(f"assistant:{principal.user_id}", limit=40, window_seconds=300)
@@ -549,7 +573,10 @@ async def assistant_chat(payload: AssistantChatIn,
         raise HTTPException(status_code=422, detail="Ask a question first.")
 
     try:
-        reply, model = await run_in_threadpool(assistant._anthropic_reply, system, cleaned)
+        reply, model = await llm.run_blocking(assistant._anthropic_reply, system, cleaned,
+                                              owner=principal.user_id)
+    except llm.ProviderBusy as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     except assistant.AssistantError as exc:
         raise HTTPException(
             status_code=503,

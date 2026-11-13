@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
-from . import ai
+from . import ai, llm
 from .catalog import PERMISSION_CATALOG, POLICY_EFFECTS
 from .db import clean, clean_many, get_db
 from .deps import (
@@ -160,18 +160,26 @@ async def generate_policy(payload: PolicyGenerateRequest,
                           principal: Principal = Depends(editor_principal)) -> Dict[str, Any]:
     rate_limit(f"policy-gen:{principal.user_id}", limit=20, window_seconds=300)
     if not ai.generator_available():
-        raise HTTPException(status_code=503, detail="The policy generator is not configured.")
+        raise HTTPException(
+            status_code=503,
+            detail="The rule writer is switched off on this server right now. "
+                   "You can still add rules by hand.",
+        )
     try:
-        rule = await _run_generator(payload.prompt)
+        rule = await _run_generator(payload.prompt, principal.user_id)
+    except llm.ProviderBusy as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+    except ai.PolicyGeneratorUnavailable as exc:
+        # The generator could not run at all: our side, not the request.
+        raise HTTPException(status_code=503, detail=str(exc))
     except ai.PolicyGenerationError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
     rule["effect_copy"] = EFFECT_COPY.get(rule["effect"], "")
     return {"rule": rule}
 
 
-async def _run_generator(prompt: str) -> Dict[str, Any]:
-    from starlette.concurrency import run_in_threadpool
-    return await run_in_threadpool(ai.generate_policy, prompt)
+async def _run_generator(prompt: str, owner: str = "") -> Dict[str, Any]:
+    return await llm.run_blocking(ai.generate_policy, prompt, owner=owner)
 
 
 @router.post("/policies/test")

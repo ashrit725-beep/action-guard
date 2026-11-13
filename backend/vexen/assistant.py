@@ -10,12 +10,13 @@ It never sees passwords, API keys, or another workspace's data.
 from __future__ import annotations
 
 import logging
-import os
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
+
+from . import llm
 
 logger = logging.getLogger("vexen.assistant")
 
-MODEL = "claude-opus-5-5"
+MODEL = llm.MODEL
 EFFORT = "low"
 # If a safety classifier declines the request, Anthropic re-runs it on its
 # recommended fallback model inside the same call instead of failing it.
@@ -120,10 +121,10 @@ def _clean_history(messages: List[Dict[str, Any]]) -> List[Dict[str, str]]:
 def _anthropic_reply(system: str, history: List[Dict[str, str]]) -> Tuple[str, str]:
     import anthropic
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        raise AssistantError("not configured")
-    client = anthropic.Anthropic(api_key=api_key, max_retries=1, timeout=40.0)
+    try:
+        client = llm.client(timeout=40.0)
+    except llm.ProviderKeyError as exc:
+        raise AssistantError(f"not configured ({exc.code})") from exc
     try:
         resp = client.beta.messages.create(
             model=MODEL,
@@ -134,6 +135,12 @@ def _anthropic_reply(system: str, history: List[Dict[str, str]]) -> Tuple[str, s
             betas=[FALLBACK_BETA],
             fallbacks="default",
         )
+    except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as exc:
+        llm.mark_rejected()
+        raise AssistantError("the AI key was refused") from exc
+    except anthropic.NotFoundError as exc:
+        llm.mark_model_unavailable()
+        raise AssistantError("the AI key cannot use the model") from exc
     except anthropic.APIStatusError as exc:
         logger.warning("Assistant error %s (request %s): %s",
                        exc.status_code, exc.request_id, exc.message)
@@ -141,6 +148,7 @@ def _anthropic_reply(system: str, history: List[Dict[str, str]]) -> Tuple[str, s
     except anthropic.APIConnectionError as exc:
         logger.warning("Assistant could not reach Anthropic: %s", exc)
         raise AssistantError("connection error") from exc
+    llm.mark_working()
     if resp.stop_reason == "refusal":
         raise AssistantError("declined")
     text = " ".join(b.text for b in resp.content if b.type == "text").strip()
@@ -170,19 +178,3 @@ def follow_ups(snapshot: str) -> List[str]:
             seen.add(t)
             unique.append(t)
     return unique[:4]
-
-
-async def answer(db, *, org_id: str, user_name: str, messages: List[Dict[str, Any]],
-                 page: Optional[str] = None) -> Dict[str, Any]:
-    history = _clean_history(messages)
-    if not history:
-        raise AssistantError("no question asked")
-    snapshot = await workspace_snapshot(db, org_id, user_name)
-    system = (
-        SYSTEM_PROMPT
-        + "\n\nThis person's workspace right now:\n"
-        + snapshot
-        + (f"\n\nThey are currently looking at: {page}" if page else "")
-    )
-    text, model = _anthropic_reply(system, history)
-    return {"reply": text, "model": model, "suggestions": follow_ups(snapshot)}

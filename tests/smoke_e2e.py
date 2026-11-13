@@ -7,7 +7,19 @@ import sys
 
 import requests
 
-BASE = os.environ.get("VEXEN_BASE", "http://localhost:8001") + "/api"
+# A stuck server must fail the run, not hang it.
+_request = requests.Session.request
+
+
+def _request_with_timeout(self, method, url, **kwargs):
+    kwargs.setdefault("timeout", 30)
+    return _request(self, method, url, **kwargs)
+
+
+requests.Session.request = _request_with_timeout
+
+SITE = os.environ.get("VEXEN_BASE", "http://127.0.0.1:8000")
+BASE = SITE + "/api"
 rand = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
 EMAIL = f"smoke_{rand}@example.com"
 PASSWORD = "SmokeTest123!"
@@ -18,6 +30,10 @@ ok, fail = [], []
 def check(label, condition, detail=""):
     (ok if condition else fail).append(label)
     print(("PASS " if condition else "FAIL ") + label + (f" :: {detail}" if detail else ""))
+
+
+def skip(label, why):
+    print(f"SKIP {label} :: {why}")
 
 
 s = requests.Session()
@@ -38,7 +54,10 @@ check("new workspace has 0 agents", r.json().get("total") == 0, str(r.json().get
 r = s.get(f"{BASE}/policies")
 policies = r.json()
 check("baseline rules installed", policies.get("total", 0) > 0, str(policies.get("total")))
-check("ai generator available", policies.get("generator_available") is True)
+# The AI features need a working Anthropic key on the server. Without one they must be
+# switched off cleanly, and this script checks that instead of failing.
+ai_on = policies.get("generator_available") is True
+print(f"NOTE AI features are {'on' if ai_on else 'off'} on this server")
 
 # 4. library is 10k+ and paginates
 r = s.get(f"{BASE}/catalog/templates", params={"limit": 24, "page": 2})
@@ -78,18 +97,30 @@ r = s.post(f"{BASE}/policies/test", json={"agent_id": agent_id, "resource": "pay
 cards = r.json().get("result", {})
 check("saved cards blocked (default deny)", cards.get("decision") == "BLOCK", f"{cards.get('decision')} :: {cards.get('reason')}")
 
-# 9. AI natural-language rule generation
-r = s.post(f"{BASE}/policies/generate", json={"prompt": "Never let any agent spend more than 200 dollars without asking me first"})
-check("AI rule generated", r.status_code == 200, f"{r.status_code} {r.text[:250]}")
-if r.status_code == 200:
-    rule = r.json().get("rule", {})
-    check("AI rule has an effect", rule.get("effect") in {"DENY", "REQUIRE_APPROVAL", "LIMIT", "MAX_TTL", "REQUIRE_SCOPE"}, str(rule.get("effect")))
-    rr = s.post(f"{BASE}/policies", json={
-        "name": rule.get("name", "AI rule"), "description": rule.get("description"),
-        "effect": rule["effect"], "match": rule.get("match", {}), "params": rule.get("params", {}),
-        "priority": rule.get("priority", 30), "enabled": True, "source": "ai",
-    })
-    check("AI rule saves", rr.status_code == 201, f"{rr.status_code} {rr.text[:200]}")
+# 9. AI natural-language rule generation (Anthropic only)
+PROMPT = "Never let any agent spend more than 200 dollars without asking me first"
+if ai_on:
+    r = s.post(f"{BASE}/policies/generate", json={"prompt": PROMPT}, timeout=130)
+    check("AI rule generated", r.status_code == 200, f"{r.status_code} {r.text[:250]}")
+    if r.status_code == 200:
+        rule = r.json().get("rule", {})
+        check("AI rule has an effect", rule.get("effect") in {"DENY", "REQUIRE_APPROVAL", "LIMIT", "MAX_TTL", "REQUIRE_SCOPE"}, str(rule.get("effect")))
+        check("AI rule was written by Anthropic", str(rule.get("generated_by", "")).startswith("anthropic:claude-"),
+              str(rule.get("generated_by")))
+        rr = s.post(f"{BASE}/policies", json={
+            "name": rule.get("name", "AI rule"), "description": rule.get("description"),
+            "effect": rule["effect"], "match": rule.get("match", {}), "params": rule.get("params", {}),
+            "priority": rule.get("priority", 30), "enabled": True, "source": "ai",
+        })
+        check("AI rule saves", rr.status_code == 201, f"{rr.status_code} {rr.text[:200]}")
+    r = s.get(f"{BASE}/assistant/status")
+    check("help assistant is offered", r.status_code == 200 and r.json().get("available") is True, r.text[:120])
+else:
+    r = s.post(f"{BASE}/policies/generate", json={"prompt": PROMPT})
+    check("AI rule writer says it is off (503)", r.status_code == 503, f"{r.status_code} {r.text[:160]}")
+    r = s.get(f"{BASE}/assistant/status")
+    check("help assistant is hidden", r.status_code == 200 and r.json().get("available") is False, r.text[:120])
+    skip("AI rule generation", "no working Anthropic key on this server")
 
 # 10. credentials + real API authorize
 r = s.post(f"{BASE}/agents/{agent_id}/credentials", json={"name": "Smoke key"})
@@ -98,6 +129,10 @@ secret = r.json().get("secret")
 r = requests.post(f"{BASE}/v1/authorize", headers={"X-Vexen-Key": secret},
                   json={"resource": "shopping", "action": "purchase", "amount": 40})
 check("real /v1/authorize works", r.status_code == 200 and r.json().get("decision"), f"{r.status_code} {r.text[:200]}")
+r = requests.post(f"{BASE}/v1/authorize", headers={"X-Vexen-Key": secret},
+                  data=json.dumps({"resource": "shopping", "action": "purchase", "amount": 41}))  # no Content-Type
+check("agent API accepts a JSON body sent without a Content-Type header",
+      r.status_code == 200 and r.json().get("decision"), f"{r.status_code} {r.text[:120]}")
 r = requests.post(f"{BASE}/v1/authorize", headers={"X-Vexen-Key": "vex_sk_live_bogus"},
                   json={"resource": "shopping", "action": "purchase"})
 check("bad key rejected 401", r.status_code == 401, str(r.status_code))
@@ -149,8 +184,10 @@ check("team endpoint", r.status_code == 200 and r.json().get("your_role") == "ow
 r = s.post(f"{BASE}/team/invites", json={"email": MATE, "role": "viewer"})
 check("invite created", r.status_code == 201, f"{r.status_code} {r.text[:140]}")
 join_url = r.json().get("join_url", "")
-check("invite link is absolute and public", join_url.startswith("http") and "localhost" not in join_url,
-      join_url[:60])
+check("invite link is absolute", join_url.startswith("http") and "/join/" in join_url, join_url[:60])
+expected = os.environ.get("VEXEN_EXPECT_PUBLIC_URL", "").rstrip("/")
+if expected:
+    check("invite link uses the configured public address", join_url.startswith(expected + "/join/"), join_url[:80])
 join_token = join_url.rsplit("/join/", 1)[-1]
 r = requests.get(f"{BASE}/public/invites/{join_token}")
 check("invite preview (no login)", r.status_code == 200 and r.json().get("state") == "pending",
@@ -192,6 +229,25 @@ s.delete(f"{BASE}/agents/{link_agent}")
 
 # 18. cleanup
 check("agent delete", s.delete(f"{BASE}/agents/{agent_id}").status_code == 200)
+
+# 19. the public contact form
+r = requests.post(f"{BASE}/public/contact", json={
+    "name": "Smoke Tester", "email": EMAIL, "topic": "general",
+    "message": "This is an automated smoke test message."})
+check("contact form accepts a message", r.status_code == 201 and str(r.json().get("reference", "")).startswith("VEX-MSG-"),
+      f"{r.status_code} {r.text[:120]}")
+
+# 20. readiness, and the website served from the same address (when a build is present)
+r = requests.get(f"{BASE}/ready")
+check("ready check reaches the database", r.status_code == 200 and r.json().get("database") == "ok", r.text[:140])
+home = requests.get(SITE + "/")
+if home.headers.get("content-type", "").startswith("text/html"):
+    check("website is served", 'id="root"' in home.text)
+    check("a signed-link address opens the app", 'id="root"' in requests.get(SITE + "/approve/abc.def").text)
+    check("a missing script is a 404, not a page", requests.get(SITE + "/static/js/nope.js").status_code == 404)
+    check("an unknown API path is a JSON 404", requests.get(f"{BASE}/nope").status_code == 404)
+else:
+    skip("website checks", "this server has no frontend build (API only)")
 
 print("\n" + "=" * 60)
 print(f"PASSED {len(ok)} / {len(ok) + len(fail)}")

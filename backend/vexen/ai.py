@@ -10,14 +10,14 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 from typing import Any, Dict, List, Tuple
 
+from . import llm
 from .catalog import PERMISSION_CATALOG, POLICY_EFFECTS
 
 logger = logging.getLogger("vexen.ai")
 
-MODEL = "claude-opus-5-5"
+MODEL = llm.MODEL
 EFFORT = "medium"
 # If a safety classifier declines the request, Anthropic re-runs it on its
 # recommended fallback model inside the same call instead of failing it.
@@ -78,6 +78,11 @@ Hard rules:
 
 class PolicyGenerationError(RuntimeError):
     """Raised when a natural-language policy cannot be safely compiled."""
+
+
+class PolicyGeneratorUnavailable(PolicyGenerationError):
+    """The generator itself could not run (key, network, provider), as opposed
+    to a request it ran and could not turn into a safe rule."""
 
 
 def _catalog_block() -> str:
@@ -183,10 +188,11 @@ def _validate(raw: Dict[str, Any]) -> Dict[str, Any]:
 def _anthropic_call(prompt: str) -> Tuple[Dict[str, Any], str]:
     import anthropic
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        raise PolicyGenerationError("Policy generator is not configured.")
-    client = anthropic.Anthropic(api_key=api_key, max_retries=1, timeout=45.0)
+    try:
+        client = llm.client(timeout=45.0)
+    except llm.ProviderKeyError as exc:
+        raise PolicyGeneratorUnavailable(
+            "The policy generator is not set up. " + str(exc)) from exc
     user = (
         "Permission catalog:\n" + _catalog_block()
         + "\n\nAdministrator's requirement:\n\"\"\"\n" + prompt.strip() + "\n\"\"\"\n\n"
@@ -205,17 +211,30 @@ def _anthropic_call(prompt: str) -> Tuple[Dict[str, Any], str]:
             betas=[FALLBACK_BETA],
             fallbacks="default",
         )
+    except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as exc:
+        llm.mark_rejected()
+        raise PolicyGeneratorUnavailable(
+            "The policy generator is switched off because Anthropic did not accept the "
+            "AI key. Ask whoever runs this Vexen to check it.") from exc
+    except anthropic.NotFoundError as exc:
+        llm.mark_model_unavailable()
+        raise PolicyGeneratorUnavailable(
+            "The policy generator is switched off because the AI key cannot use the "
+            "model it needs. Ask whoever runs this Vexen to check the key.") from exc
     except anthropic.RateLimitError as exc:
         logger.warning("Policy generator rate limited (request %s)", exc.request_id)
-        raise PolicyGenerationError("The policy generator is busy. Try again in a minute.") from exc
+        raise PolicyGeneratorUnavailable("The policy generator is busy. Try again in a minute.") from exc
     except anthropic.APIStatusError as exc:
         logger.error("Policy generator error %s (request %s): %s",
                      exc.status_code, exc.request_id, exc.message)
-        raise PolicyGenerationError(f"Policy generator unavailable: {type(exc).__name__}") from exc
+        raise PolicyGeneratorUnavailable(
+            "The policy generator is unavailable right now. Try again in a minute.") from exc
     except anthropic.APIConnectionError as exc:
         logger.error("Policy generator could not reach Anthropic: %s", exc)
-        raise PolicyGenerationError(f"Policy generator unavailable: {type(exc).__name__}") from exc
+        raise PolicyGeneratorUnavailable(
+            "The policy generator could not reach Anthropic. Try again in a minute.") from exc
 
+    llm.mark_working()
     if resp.stop_reason == "refusal":
         raise PolicyGenerationError(
             "The AI model's safety checks declined that request, so no rule was drafted. "
@@ -246,4 +265,5 @@ def generate_policy(prompt: str) -> Dict[str, Any]:
 
 
 def generator_available() -> bool:
-    return bool(os.environ.get("ANTHROPIC_API_KEY"))
+    """Only an Anthropic API key switches the generator on (see llm.py)."""
+    return llm.available()

@@ -69,11 +69,10 @@ def smtp_configured() -> bool:
 
 def public_app_url(base_url: Optional[str] = None) -> str:
     """The address a person on their phone can actually open."""
-    candidate = (base_url or "").strip().rstrip("/")
-    if candidate and "localhost" not in candidate and "127.0.0.1" not in candidate:
-        return candidate
-    fallback = (os.environ.get("PUBLIC_APP_URL") or "").strip().rstrip("/")
-    return fallback or candidate
+    from .urls import configured_public_url
+
+    # A configured address always wins: request headers are chosen by the caller.
+    return configured_public_url() or (base_url or "").strip().rstrip("/")
 
 
 # ---------------------------------------------------------------------------
@@ -171,6 +170,25 @@ async def _claim_next(db) -> Optional[Dict[str, Any]]:
     )
 
 
+STUCK_AFTER_SECONDS = 300  # longer than SEND_TIMEOUT_SECONDS, so a send still in progress is never taken back
+
+
+async def recover_stuck(db) -> int:
+    """Put messages back in the queue when a worker stopped in the middle of sending.
+
+    A deploy or restart can stop the worker after it claimed a message and before
+    it recorded the result. Without this the message would stay "sending" forever.
+    """
+    result = await db.email_outbox.update_many(
+        {"status": "sending", "claimed_at": {"$lt": _now() - timedelta(seconds=STUCK_AFTER_SECONDS)}},
+        {"$set": {"status": "queued", "next_attempt_at": _now()}},
+    )
+    if result.modified_count:
+        logger.warning("Returned %s unsent email(s) to the queue after an interrupted send.",
+                       result.modified_count)
+    return int(result.modified_count)
+
+
 async def _record_failure(db, row: Dict[str, Any], error: str, *, terminal: bool) -> None:
     attempts = int(row.get("attempts") or 0) + 1
     give_up = terminal or attempts >= MAX_ATTEMPTS
@@ -229,7 +247,9 @@ async def outbox_worker(stop_event: asyncio.Event) -> None:
     while not stop_event.is_set():
         try:
             if smtp_configured():
-                await drain_once(get_db())
+                db = get_db()
+                await recover_stuck(db)
+                await drain_once(db)
         except asyncio.CancelledError:  # pragma: no cover
             raise
         except Exception as exc:  # noqa: BLE001 - the worker must never die
@@ -478,4 +498,33 @@ def test_email(*, workspace: str, console_url: str) -> Tuple[str, str, str]:
     text = ("Vexen email is working.\n\n"
             f"Workspace: {workspace}\n"
             f"Open Vexen: {console_url}\n")
+    return subject, text, html
+
+
+def contact_message_email(*, reference: str, name: str, email: str, company: Optional[str],
+                          topic: str, message: str) -> Tuple[str, str, str]:
+    """The site owner's copy of a message sent from the website's contact page."""
+
+    def one_line(value: str, limit: int) -> str:
+        return " ".join((value or "").split())[:limit]  # a subject can never carry a line break
+
+    subject = f"New message on Vexen ({one_line(topic, 40)}) from {one_line(name, 60)}"
+    rows = [
+        ("From", f'<strong style="color:{INK}">{_esc(name)}</strong> &lt;{_esc(email)}&gt;'),
+        ("Company", _esc(company) or "-"),
+        ("Topic", _esc(topic)),
+        ("Message", _esc(message).replace("\n", "<br>")),
+        ("Reference", _esc(reference)),
+    ]
+    html = _shell(heading="New contact message",
+                  intro="Someone wrote to you from the website's contact page. Reply to the address above.",
+                  rows=rows, buttons="",
+                  footer="The message is also saved in the contact_messages collection.",
+                  accent=BRAND)
+    text = ("New message from the website's contact page.\n\n"
+            f"From: {name} <{email}>\n"
+            f"Company: {company or '-'}\n"
+            f"Topic: {topic}\n"
+            f"Reference: {reference}\n\n"
+            f"{message}\n")
     return subject, text, html

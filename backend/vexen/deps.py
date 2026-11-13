@@ -1,6 +1,8 @@
 """Authentication dependencies, tenancy guards and lightweight rate limiting."""
 from __future__ import annotations
 
+import hashlib
+import ipaddress
 import time
 from collections import defaultdict, deque
 from dataclasses import dataclass
@@ -11,15 +13,41 @@ from fastapi import Depends, HTTPException, Request, status
 
 from .db import get_db
 from .security import decode_token, hash_api_key, looks_like_agent_key
+from .urls import configured_public_url
 
 # ---------------------------------------------------------------------------
 # Rate limiting (per-process token buckets; safe defaults, fails closed on abuse)
 # ---------------------------------------------------------------------------
 _BUCKETS: Dict[str, Deque[float]] = defaultdict(deque)
+_MAX_BUCKETS = 20000
+_LONGEST_WINDOW_SECONDS = 3600  # the longest window any caller asks for
+_last_sweep = 0.0
+
+
+def _sweep(now: float) -> None:
+    """Forget callers nobody has seen for longer than any window lasts.
+
+    Without this every distinct key (an email address, an address an attacker
+    made up) would stay in memory for the life of the process.
+    """
+    global _last_sweep
+    _last_sweep = now
+    cutoff = now - _LONGEST_WINDOW_SECONDS - 60
+    for key in [k for k, b in _BUCKETS.items() if not b or b[-1] < cutoff]:
+        del _BUCKETS[key]
+    if len(_BUCKETS) > _MAX_BUCKETS:
+        # Still too many fresh keys. Drop the callers with the fewest hits first: a flood of
+        # made-up keys then evicts itself, and a caller who is locked out keeps the lock.
+        for key in sorted(_BUCKETS, key=lambda k: (len(_BUCKETS[k]), _BUCKETS[k][-1]))[: len(_BUCKETS) // 4]:
+            del _BUCKETS[key]
 
 
 def rate_limit(key: str, *, limit: int, window_seconds: int) -> None:
+    if len(key) > 120:  # keys can include text a stranger chose; never let one grow without bound
+        key = key[:40] + "#" + hashlib.sha256(key.encode("utf-8", "replace")).hexdigest()[:24]
     now = time.monotonic()
+    if (len(_BUCKETS) > _MAX_BUCKETS and now - _last_sweep > 5) or now - _last_sweep > 600:
+        _sweep(now)
     bucket = _BUCKETS[key]
     cutoff = now - window_seconds
     while bucket and bucket[0] < cutoff:
@@ -30,27 +58,34 @@ def rate_limit(key: str, *, limit: int, window_seconds: int) -> None:
             detail="Too many requests. Please slow down and try again shortly.",
         )
     bucket.append(now)
-    if len(_BUCKETS) > 20000:  # keep memory bounded
-        for stale_key in list(_BUCKETS.keys())[:5000]:
-            if not _BUCKETS[stale_key]:
-                _BUCKETS.pop(stale_key, None)
 
 
 def client_ip(request: Request) -> str:
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
-        return forwarded.split(",")[0].strip()
+        candidate = forwarded.split(",")[0].strip()
+        try:
+            return str(ipaddress.ip_address(candidate))  # only a real address, never arbitrary text
+        except ValueError:
+            pass
     return request.client.host if request.client else "unknown"
 
 
 def public_base_url(request: Request) -> str:
     """The address somebody outside this cluster can actually reach.
 
-    Behind the ingress, `request.base_url` is an internal cluster hostname, so
-    the developer docs (and the URLs we hand to agents) must be built from the
-    forwarded headers instead — otherwise every copied curl command fails on
-    someone else's machine.
+    When the site's own address is configured (PUBLIC_APP_URL, or the one the
+    host assigns) it is used as is. Request headers are chosen by the caller,
+    and approval emails are built from this value on an agent's own request, so
+    a known address must never be overridden by a header.
+
+    Otherwise, behind an ingress `request.base_url` is an internal hostname, so
+    the address is built from the forwarded headers: without that every copied
+    curl command fails on someone else's machine.
     """
+    configured = configured_public_url()
+    if configured:
+        return configured
     proto = (request.headers.get("x-forwarded-proto") or "").split(",")[0].strip()
     host = (request.headers.get("x-forwarded-host") or "").split(",")[0].strip()
     if not host:
