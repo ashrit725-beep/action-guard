@@ -17,7 +17,7 @@ from typing import List, Optional, Tuple
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from . import config, db, llm
+from . import config, db, llm, serverless
 
 logger = logging.getLogger("vexen")
 
@@ -77,8 +77,10 @@ class Setup:
         logger.info("Vexen indexes ready")
         self.ready, self.db_error, self._db_failed_at = True, None, None
 
-        # Ask Anthropic whether the AI key works, without delaying anything or failing on it.
-        self._ai_check = asyncio.create_task(asyncio.to_thread(llm.verify), name="vexen-ai-check")
+        # Ask Anthropic whether the AI key works, without delaying anything or failing on it. On Vercel
+        # the request that ran this setup finishes the check after its response (in_background):
+        # left to itself, it would sit in an instance that is paused as soon as that request ends.
+        self._ai_check = serverless.in_background(asyncio.to_thread(llm.verify), name="vexen-ai-check")
         return None
 
     async def run(self, *, fatal: bool) -> None:

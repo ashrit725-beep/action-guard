@@ -491,6 +491,28 @@ def test_the_gate_opens_once_the_setup_is_done(monkeypatch, anthropic_key, index
     assert indexes["n"] == 1
 
 
+def test_on_vercel_the_ai_key_check_finishes_inside_the_request_that_started_it(
+        monkeypatch, anthropic_key, indexes):
+    # A Vercel instance is paused once a request ends, so a check left running "in the background"
+    # would never finish and the AI would stay "unverified". The first request now waits for it,
+    # after its response has gone out.
+    _good(monkeypatch)
+    monkeypatch.setenv("VERCEL", "1")
+    checked: list = []
+
+    def verify():
+        import time
+
+        time.sleep(0.2)  # Anthropic takes a moment to answer
+        checked.append(True)
+        return {}
+
+    monkeypatch.setattr(startup.llm, "verify", verify)
+    with TestClient(serverless.AfterResponse(_gated(startup.Setup()))) as client:
+        assert client.get("/api/agents").json() == {"agents": []}
+        assert checked == [True]
+
+
 @pytest.fixture
 def server_app(monkeypatch, indexes):
     """The real app with its real lifespan, with the email worker replaced by a recorder."""
