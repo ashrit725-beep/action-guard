@@ -4,12 +4,17 @@ Nothing on a request path ever talks to an SMTP server. A caller writes a row
 into `email_outbox`; one background worker drains it. That keeps authorization
 decisions fast, survives a slow or rate-limiting mail provider, and means a
 broken mailbox can never take the product down — the mail simply waits.
+
+On Vercel there is no always-running worker: the outbox is drained right after
+the response to the request that queued the mail, and by a scheduled call
+(see serverless.py).
 """
 from __future__ import annotations
 
 import asyncio
 import logging
 import os
+import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
@@ -154,10 +159,13 @@ async def queue_email(db, *, to: str, subject: str, text: str, html: str, kind: 
     }
     try:
         await db.email_outbox.insert_one(doc)
-        return doc["id"]
     except Exception as exc:  # noqa: BLE001 - duplicate dedupe key or db hiccup
         logger.info("Email not queued (%s): %s", kind, str(exc)[:160])
         return None
+    from .serverless import note_mail_queued
+
+    note_mail_queued()  # on Vercel: send it once the response has gone out
+    return doc["id"]
 
 
 async def _claim_next(db) -> Optional[Dict[str, Any]]:
@@ -206,8 +214,12 @@ async def _record_failure(db, row: Dict[str, Any], error: str, *, terminal: bool
 
 
 async def drain_once(db, *, limit: int = BATCH_SIZE) -> Dict[str, int]:
-    """Send up to `limit` queued messages. Returns a small counters dict."""
-    sent = failed = 0
+    """Send up to `limit` queued messages, stopping at the first refusal.
+
+    Returns counters: `sent`, `failed`, and `terminal` (1 when the provider refused in a way no retry
+    can fix, such as a rejected login).
+    """
+    sent = failed = terminal = 0
     for _ in range(limit):
         row = await _claim_next(db)
         if not row:
@@ -219,6 +231,7 @@ async def drain_once(db, *, limit: int = BATCH_SIZE) -> Dict[str, int]:
             failed += 1
             await _record_failure(db, row, str(exc), terminal=exc.terminal)
             if exc.terminal:
+                terminal = 1
                 logger.error("Email permanently failed for %s: %s", row["kind"], str(exc)[:160])
             # A provider that just refused us is unlikely to accept the next one
             # immediately, so stop this pass and let the worker retry later.
@@ -235,7 +248,39 @@ async def drain_once(db, *, limit: int = BATCH_SIZE) -> Dict[str, int]:
                  "$inc": {"attempts": 1}},
             )
             await asyncio.sleep(SEND_SPACING_SECONDS)
-    return {"sent": sent, "failed": failed}
+    return {"sent": sent, "failed": failed, "terminal": terminal}
+
+
+REFUSED_PASSES_BEFORE_STOPPING = 3
+
+
+async def drain_for(db, *, seconds: float) -> Dict[str, int]:
+    """Send everything that is due, batch after batch, for about `seconds` at most.
+
+    For Vercel (serverless.py), where no worker comes back five seconds later to send the rest. It
+    first takes back messages a stopped instance left half sent. A message the provider refuses waits
+    for its own retry time (_record_failure), so the run goes on with the next one instead of leaving
+    the whole queue behind it. It stops once nothing more is due, when the provider rejects the
+    account itself (no retry can help), after three refused passes in a row, or when the time is up.
+    """
+    deadline = time.monotonic() + max(0.0, seconds)
+    totals = {"recovered": await recover_stuck(db), "sent": 0, "failed": 0}
+    refused_in_a_row = 0
+    while True:
+        result = await drain_once(db)
+        sent, failed = result.get("sent", 0), result.get("failed", 0)
+        totals["sent"] += sent
+        totals["failed"] += failed
+        if failed:
+            refused_in_a_row = 1 if sent else refused_in_a_row + 1
+            if result.get("terminal") or refused_in_a_row >= REFUSED_PASSES_BEFORE_STOPPING:
+                return totals
+        elif sent < BATCH_SIZE:
+            return totals  # nothing more is due
+        else:
+            refused_in_a_row = 0
+        if time.monotonic() >= deadline:
+            return totals
 
 
 async def outbox_worker(stop_event: asyncio.Event) -> None:

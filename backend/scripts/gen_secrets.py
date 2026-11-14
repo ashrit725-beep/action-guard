@@ -3,9 +3,10 @@
 
     python backend/scripts/gen_secrets.py
 
-JWT_SECRET and API_KEY_PEPPER are random strings. The VAPID pair is what lets the
-server send phone notifications (optional). ANTHROPIC_API_KEY is not generated
-here: create it in the Anthropic Console (console.anthropic.com).
+JWT_SECRET and API_KEY_PEPPER are random strings. CRON_SECRET protects Vercel's
+scheduled email run (letters and digits only, as Vercel asks). The VAPID pair is
+what lets the server send phone notifications (optional). ANTHROPIC_API_KEY is not
+generated here: create it in the Anthropic Console (console.anthropic.com).
 """
 from __future__ import annotations
 
@@ -37,6 +38,8 @@ def main() -> None:
     print("# and changing API_KEY_PEPPER stops every agent key from working.")
     print(f"JWT_SECRET={secrets.token_urlsafe(48)}")
     print(f"API_KEY_PEPPER={secrets.token_urlsafe(32)}")
+    print("\n# Vercel only: lets Vercel's scheduled job send the queued email (see docs/DEPLOY.md)")
+    print(f"CRON_SECRET={secrets.token_hex(24)}")
     try:
         public, private = vapid_pair()
     except ImportError:

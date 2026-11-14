@@ -1,0 +1,61 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "cd frontend && yarn install --frozen-lockfile --non-interactive --network-timeout 300000",
+  "buildCommand": "sh frontend/vercel-build.sh",
+  "outputDirectory": "frontend/build",
+  "regions": ["pdx1"],
+  "fluid": true,
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 300,
+      "includeFiles": "backend/{server.py,vexen/*.py}",
+      "excludeFiles": "{frontend/**,deck/**,memory/**,.demovideo/**,test_reports/**,tests/**,backend/tests/**,backend/scripts/**,sdk/**,docs/**,.emergent/**,.github/**,.gitconfig,**/*.md,**/.env,**/.env.*,**/__pycache__/**,**/*.pem,**/*.key}"
+    }
+  },
+  "rewrites": [
+    { "source": "/api(/.*)?", "destination": "/api/index" },
+    { "source": "/(approve|join)(/.*)?", "destination": "/index.html" },
+    {
+      "source": "/((?!api(?:/|$))(?!static/)(?!.*\\.(?:js|mjs|css|map|json|txt|xml|webmanifest|png|jpe?g|gif|svg|ico|webp|avif|woff2?|ttf|otf|mp4|webm|pdf|py)$).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/((?!api(?:/|$)).*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    },
+    {
+      "source": "/static/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    },
+    {
+      "source": "/(index\\.html|sw\\.js|manifest\\.json|asset-manifest\\.json|robots\\.txt)",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    },
+    {
+      "source": "/(approve|join)(/.*)?",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    },
+    {
+      "source": "/((?!api(?:/|$))(?!static/)(?!.*\\.(?:js|mjs|css|map|json|txt|xml|webmanifest|png|jpe?g|gif|svg|ico|webp|avif|woff2?|ttf|otf|mp4|webm|pdf|py)$).*)",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    },
+    {
+      "source": "/(demo|docs)/([^/]+)",
+      "has": [{ "type": "query", "key": "download" }],
+      "headers": [{ "key": "Content-Disposition", "value": "attachment" }]
+    }
+  ],
+  "crons": [{ "path": "/api/internal/outbox", "schedule": "0 9 * * *" }]
+}

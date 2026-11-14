@@ -30,6 +30,8 @@ from starlette.responses import JSONResponse, Response
 from starlette.staticfiles import StaticFiles
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from .serverless import on_vercel
+
 logger = logging.getLogger("vexen.site")
 
 # backend/vexen/site.py -> the repository root, or /app inside the container
@@ -259,7 +261,10 @@ def mount(app) -> bool:
     """Serve the built website for every address no API route claims. Call after the routers are included."""
     directory = build_dir()
     if directory is None:
-        logger.warning("The built website was not found (looked in frontend/build). Serving the API only.")
+        if on_vercel():
+            logger.info("The website is served by Vercel's CDN; this function answers the API only.")
+        else:
+            logger.warning("The built website was not found (looked in frontend/build). Serving the API only.")
         return False
     # The router's fallback, not a Mount("/"): a mount at "/" would swallow the router's own
     # "405 Method Not Allowed" and "/path/ redirects to /path" handling for the API's addresses.

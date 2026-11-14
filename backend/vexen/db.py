@@ -7,8 +7,22 @@ from typing import Any, Dict, Iterable, List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
+from .serverless import on_vercel
+
 _client: Optional[AsyncIOMotorClient] = None
 _db: Optional[AsyncIOMotorDatabase] = None
+
+
+def pool_settings() -> Dict[str, int]:
+    """How many database connections one process keeps.
+
+    The container is one process serving everyone. On Vercel every function instance opens its own
+    pool and many instances can run at once, so each keeps a small pool and closes idle connections:
+    a free MongoDB Atlas cluster accepts at most 500 connections in all.
+    """
+    if on_vercel():
+        return {"maxPoolSize": 10, "minPoolSize": 0, "maxIdleTimeMS": 60_000}
+    return {"maxPoolSize": 200, "minPoolSize": 5}
 
 
 def get_client() -> AsyncIOMotorClient:
@@ -16,10 +30,9 @@ def get_client() -> AsyncIOMotorClient:
     if _client is None:
         _client = AsyncIOMotorClient(
             os.environ["MONGO_URL"].strip(),
-            maxPoolSize=200,
-            minPoolSize=5,
             serverSelectionTimeoutMS=8000,
             tz_aware=True,
+            **pool_settings(),
         )
     return _client
 

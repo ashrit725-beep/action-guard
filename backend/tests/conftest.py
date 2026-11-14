@@ -4,9 +4,14 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import dotenv
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+# Tests never read a developer's backend/.env. server.py loads it when imported, and its values would
+# then reach every later test (a filled-in .env makes the "nothing is configured" tests fail).
+dotenv.load_dotenv = lambda *args, **kwargs: False
 
 # A well-formed Anthropic API key that is not a real key (it only has to look right).
 FAKE_ANTHROPIC_KEY = "sk-ant-api03-" + "Ab1Cd2Ef3Gh4" * 4
@@ -18,6 +23,9 @@ _CLEARED = (
     "SERVE_INVESTOR_DOCS", "FRONTEND_BUILD_DIR",
     "MONGO_URL", "JWT_SECRET", "API_KEY_PEPPER",
     "SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD", "VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY",
+    # Vercel: the platform's own variables, and the ones Vexen reads there
+    "VERCEL", "VERCEL_ENV", "VERCEL_URL", "VERCEL_BRANCH_URL", "VERCEL_PROJECT_PRODUCTION_URL",
+    "VEXEN_PLATFORM", "VEXEN_ENV", "CRON_SECRET",
 )
 
 

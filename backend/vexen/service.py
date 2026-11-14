@@ -1,7 +1,6 @@
 """Vexen application services: seeding, agents, authorization persistence, insights."""
 from __future__ import annotations
 
-import asyncio
 import hashlib
 import json
 import re
@@ -31,6 +30,7 @@ from .engine import (
     new_agent_id,
 )
 from .library import resolve_template
+from .serverless import in_background
 
 UTC = timezone.utc
 
@@ -599,8 +599,8 @@ async def evaluate_and_record(
         await queue_approval_alerts(
             db, org=org, approval=approval_doc, agent=agent, base_url=base_url)
         # Nudge their phones too, in the background so the agent is not kept waiting.
-        asyncio.create_task(push_approval_alerts(
-            db, org=org, approval=approval_doc, agent=agent, base_url=base_url))
+        in_background(push_approval_alerts(
+            db, org=org, approval=approval_doc, agent=agent, base_url=base_url), name="vexen-push")
         await add_security_event(
             db, org_id=org_id, kind="approval_required", severity="medium",
             title=f"{agent.get('name')} escalated {result['permission_key']}",
@@ -841,7 +841,7 @@ async def decide_approval(
 # Dashboard & security center
 # ---------------------------------------------------------------------------
 async def dashboard_payload(db: AsyncIOMotorDatabase, *, org_id: str) -> Dict[str, Any]:
-    from .db import clean, clean_many
+    from .db import clean_many
 
     start = day_start()
     base = {"org_id": org_id, "event_type": "authorization"}

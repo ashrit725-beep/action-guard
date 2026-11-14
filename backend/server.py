@@ -7,6 +7,9 @@ deny, and produces a tamper-evident audit event.
 
 Everything under /api is the API. Every other address is the website (the built
 React app in frontend/build), so a single container serves both.
+
+On Vercel the same app runs as a Vercel Function (api/index.py hands it over) and
+Vercel's CDN serves the website; vercel.json describes that split.
 """
 from __future__ import annotations
 
@@ -20,15 +23,15 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 ROOT = Path(__file__).parent
 load_dotenv(ROOT / ".env")
 
-from vexen import config, llm, logs, site  # noqa: E402
+from vexen import llm, logs, serverless, site, startup  # noqa: E402
 from vexen.catalog import AGENT_TEMPLATES, PERMISSION_CATALOG  # noqa: E402
-from vexen.db import close_db, ensure_indexes, get_db  # noqa: E402
+from vexen.db import close_db, get_db  # noqa: E402
 from vexen.mailer import outbox_worker, smtp_configured  # noqa: E402
 from vexen.routes_agents import router as agents_router  # noqa: E402
 from vexen.routes_auth import router as auth_router  # noqa: E402
@@ -45,46 +48,44 @@ logger = logging.getLogger("vexen")
 logs.install()  # signed links never reach the access log
 
 
+# The start-up checks, the database indexes and the AI key check: once per process (vexen/startup.py).
+setup = startup.Setup()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Say plainly what is wrong with the setup, instead of starting half-broken.
-    problems, notes = config.check()
-    for note in notes:
-        logger.warning("Setup note: %s", note)
-    if problems:
-        for problem in problems:
-            logger.error("Setup problem: %s", problem)
-        raise RuntimeError("Vexen cannot start. " + " ".join(problems))
-
-    try:
-        await ensure_indexes()
-    except Exception as exc:  # noqa: BLE001
-        logger.error("Could not set up the database: %s", exc)
-        raise RuntimeError(
-            "Vexen cannot start: the database did not answer. Check MONGO_URL, the database "
-            "user's password and, on MongoDB Atlas, Network Access."
-        ) from exc
-    logger.info("Vexen indexes ready")
-
-    # Ask Anthropic whether the AI key works, without delaying startup or failing it.
-    ai_check = asyncio.create_task(asyncio.to_thread(llm.verify), name="vexen-ai-check")
+    on_vercel = serverless.on_vercel()
+    if not on_vercel:
+        # In the container a setup problem stops the server from starting, with the reason in the log.
+        await setup.run(fatal=True)
+    # On Vercel nothing waits here. Vercel holds every request to a new instance until this start-up
+    # is over, so the liveness check would wait on the database too. The first API request runs the
+    # setup instead (SetupGate below), and a problem is answered plainly rather than stopping the
+    # instance before it could say why.
 
     # Outbound email is drained by one background task so that no request —
     # least of all an agent's authorization call — ever waits on a mail server.
+    # A Vercel instance is paused between requests, so there the mail is sent right
+    # after the request that queued it, and by a scheduled call (vexen/serverless.py).
     stop_mail = asyncio.Event()
-    mail_task = asyncio.create_task(outbox_worker(stop_mail), name="vexen-outbox")
-    logger.info("Email worker started (smtp configured: %s)", smtp_configured())
+    mail_task = None
+    if on_vercel:
+        logger.info("Email is sent after each request that queues it and by the scheduled run "
+                    "(smtp configured: %s)", smtp_configured())
+    else:
+        mail_task = asyncio.create_task(outbox_worker(stop_mail), name="vexen-outbox")
+        logger.info("Email worker started (smtp configured: %s)", smtp_configured())
 
     yield
 
     stop_mail.set()
-    mail_task.cancel()
-    ai_check.cancel()
-    for task in (mail_task, ai_check):
+    if mail_task is not None:
+        mail_task.cancel()
         try:
-            await task
+            await mail_task
         except (asyncio.CancelledError, Exception):  # noqa: BLE001
             pass
+    await setup.stop()
     await close_db()
 
 
@@ -98,6 +99,11 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
     swagger_ui_oauth2_redirect_url="/api/docs/oauth2-redirect",
 )
+
+# Innermost first. An API request waits for the one-time setup (and is told plainly when the setup
+# is broken); on Vercel, work a request started is finished after its response has been sent.
+app.add_middleware(startup.SetupGate, setup=setup)
+app.add_middleware(serverless.AfterResponse)
 
 # The website and the API share one address, so browsers need no CORS. It is only
 # switched on for a front end hosted somewhere else:
@@ -172,6 +178,9 @@ async def ready():
 # routes force a save-to-disk instead of opening in the browser.
 # The pitch deck, cap table and one-pager are investor material: they are only
 # served when SERVE_INVESTOR_DOCS is switched on.
+# On Vercel the files are on the CDN, not in the function (whose answers are also
+# capped at 4.5 MB; the demo video is 18 MB), so the browser is sent to the file
+# itself, and vercel.json marks a file asked for with ?download=1 as a download.
 # --------------------------------------------------------------------------- #
 DOWNLOADS = {
     "demo-video": ("demo/vexen-demo.mp4", "vexen-demo.mp4", "video/mp4"),
@@ -207,6 +216,9 @@ async def download(item: str):
     if not entry:
         return JSONResponse(status_code=404, content={"detail": "Nothing to download here."})
     relative, filename, media_type = entry
+    if serverless.on_vercel():
+        return RedirectResponse(f"/{relative}?download=1", status_code=307,
+                                headers={"Cache-Control": "no-store"})
     base = site.files_dir()
     path = base / relative if base else None
     if path is None or not path.is_file():
@@ -231,6 +243,7 @@ app.include_router(team_router)
 app.include_router(public_router)
 app.include_router(links_router)
 app.include_router(invites_router)
+app.include_router(serverless.router)  # /api/internal/outbox: the scheduled email run (CRON_SECRET)
 
 # The website answers every address the API does not. A no-op when there is no build.
 site.mount(app)

@@ -4,16 +4,16 @@
 agent tries gets one of three answers: **Allowed**, **Blocked** or **Needs your OK**. The decision is made on
 the server, starts from "no", and is written to a tamper-evident history.
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ashrit725-beep/action-guard)
-
-It is one website and one server in one container: the marketing site, the sign-in and dashboard, and the API
-that agents call, all at one address.
+It is one website and one server: the marketing site, the sign-in and dashboard, and the API that agents
+call, all at one address. On Vercel the website comes from Vercel's CDN and the API runs as a Vercel Function;
+anywhere else both run in one container.
 
 | Part | What it is | Where |
 | --- | --- | --- |
 | Website and app | React (Create React App, Tailwind, shadcn/ui) | [`frontend/`](frontend) |
-| Server and API | FastAPI, MongoDB, one process | [`backend/`](backend) |
+| Server and API | FastAPI, MongoDB | [`backend/`](backend) |
 | Agent SDK | One file an agent developer puts in front of an action | [`sdk/python/vexen.py`](sdk/python/vexen.py) |
+| Vercel | The website on the CDN, the API as one Python function | [`vercel.json`](vercel.json), [`api/index.py`](api/index.py) |
 | Container | Builds the site, then serves it with the API | [`Dockerfile`](Dockerfile) |
 
 ## AI: Anthropic only
@@ -38,13 +38,27 @@ that begin with `vex_sk_live_` are Vexen's own credentials for agents, not an AI
 ## Deploy it
 
 [`docs/DEPLOY.md`](docs/DEPLOY.md) is the step-by-step guide (about 20 minutes): a free MongoDB Atlas database,
-an Anthropic key, and Render. The short version:
+an Anthropic key, and Vercel. The short version:
 
-1. Create a MongoDB Atlas free cluster and copy its connection string.
-2. Create an Anthropic API key.
-3. Press **Deploy to Render** above, paste the two values when asked, and wait for the first build.
+1. Create a MongoDB Atlas free cluster (AWS, Oregon), allow access from anywhere (`0.0.0.0/0`: Vercel has no
+   fixed addresses), and copy its connection string.
+2. Create an Anthropic API key, and run `python3 backend/scripts/gen_secrets.py` for `JWT_SECRET`,
+   `API_KEY_PEPPER` and `CRON_SECRET`.
+3. At <https://vercel.com/new>, import this repository, keep the settings `vercel.json` provides, add
+   `MONGO_URL`, `DB_NAME`, `JWT_SECRET`, `API_KEY_PEPPER`, `ANTHROPIC_API_KEY` and `CRON_SECRET`, and press
+   **Deploy**.
 
-Run it on exactly **one** instance: the rate limits and the email worker live inside the process.
+Vercel's free Hobby plan is for personal, non-commercial use only; a business needs Pro ($20 a month). On Hobby
+(and a Pro trial) Vercel's terms also let it train AI models on what you deploy unless you opt out in your team's
+settings. On Vercel
+the rate limits and the daily AI ceiling are counted per running copy of the API, and email is sent right after
+the request that queues it plus once a day by a scheduled run: the guide explains what that means.
+
+Prefer an always-on container? The same code runs as one Docker container on Render ([`render.yaml`](render.yaml)),
+Railway or any Docker host. Run exactly **one** instance there: the rate limits and the email worker live
+inside the process.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ashrit725-beep/action-guard)
 
 ## Run it on your computer
 
@@ -102,27 +116,33 @@ notes. The ones that matter:
 | `API_KEY_PEPPER` | Strengthens stored agent keys. Set once, never change. |
 | `ANTHROPIC_API_KEY` | The only AI credential. Optional; without it the AI features are off. |
 | `ANTHROPIC_WORKSPACE_ID` | Only for an Anthropic key that is not tied to one workspace (`wrkspc_…`). |
-| `AI_DAILY_CALL_LIMIT` | Ceiling on AI requests per 24 hours across all users (default 500; `0` = none). |
-| `PUBLIC_APP_URL` | The site's address, used in emails. Automatic on Render and Railway. |
+| `AI_DAILY_CALL_LIMIT` | Ceiling on AI requests per 24 hours across all users (default 500; `0` = none). On Vercel, per running copy. |
+| `PUBLIC_APP_URL` | The site's address, used in emails. Automatic on Vercel, Render and Railway. |
+| `CRON_SECRET` | Vercel only: lets the daily scheduled run send queued email. 16+ letters and digits. |
 | `SMTP_*`, `VAPID_*` | Email alerts and phone notifications. Optional. |
 
-The server refuses to start, with a plain message, if the database address or the signing secret is missing
-or unusable. `/api/health` answers instantly for the host's health check; `/api/ready` also asks the database
-and reports whether the AI is ready.
+If the database address or the signing secret is missing or unusable, the container refuses to start with a
+plain message; on Vercel every API request is answered with that message instead. `/api/health` answers
+instantly for the host's health check; `/api/ready` also asks the database and reports whether the AI is ready.
 
 ## Repository map
 
 ```
-backend/            FastAPI server (vexen/ holds the code, tests/ the unit tests)
-  vexen/llm.py      the one door to the AI provider: Anthropic only
-  vexen/site.py     serves the built website next to the API
-frontend/           the website and app (React)
-sdk/python/         the agent SDK
-tests/smoke_e2e.py  end-to-end check against a running server
-Dockerfile          website + server in one image
-render.yaml         one-click setup for Render
-docs/DEPLOY.md      deployment guide
+backend/                  FastAPI server (vexen/ holds the code, tests/ the unit tests)
+  vexen/llm.py            the one door to the AI provider: Anthropic only
+  vexen/site.py           serves the built website next to the API (in the container)
+  vexen/serverless.py     what changes on Vercel: work after the response, the scheduled email run
+  vexen/startup.py        start-up checks, once per process
+frontend/                 the website and app (React)
+  vercel-build.sh         builds it on Vercel, without the investor documents
+api/index.py              the Vercel Function: hands Vercel the same FastAPI app
+vercel.json               the whole Vercel setup: build, routing, headers, function limits, schedule
+sdk/python/               the agent SDK
+tests/smoke_e2e.py        end-to-end check against a running server
+Dockerfile                website + server in one image
+render.yaml               one-click setup for Render
+docs/DEPLOY.md            deployment guide
 ```
 
-`deck/`, `memory/` and `.demovideo/` hold fundraising and demo material. They are not part of the product and
-are not shipped in the container.
+`deck/`, `memory/` and `.demovideo/` hold fundraising and demo material. They are not part of the product: they
+are not shipped in the container, and on Vercel they are neither served nor bundled into the function.

@@ -1,0 +1,45 @@
+# What is never sent to Vercel (a `vercel deploy` from your computer uploads the folder as it is).
+# Keeps the upload under Vercel's size limit and keeps private material and secrets off Vercel.
+# The function's own bundle is trimmed separately ("excludeFiles" in vercel.json).
+
+# Fundraising, demo-making and generated reports: not part of the product. (A leading / means
+# "at the top of the repository only": frontend/public/sdk, for example, is part of the website.)
+/deck
+/memory
+/.demovideo
+/test_reports
+/.emergent
+/.github
+/.gitconfig
+/sdk
+**/*.md
+
+# Installed and built by Vercel itself
+**/node_modules
+frontend/build
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.venv
+**/venv
+# Left by a local `vercel build`; uploaded, they would replace api/requirements.txt as the package list
+api/pyproject.toml
+api/uv.lock
+
+# Tests run in CI, not on Vercel
+/tests
+backend/tests
+
+# Anything that could hold a secret
+**/.env
+**/.env.*
+!**/.env.example
+**/*.pem
+**/*.key
+.vercel
+
+# Investor material is not published. To publish it from the website, delete these three lines
+# AND set SERVE_INVESTOR_DOCS=true in the project's environment variables, then redeploy.
+frontend/public/docs/vexen-pitch-deck.pdf
+frontend/public/docs/vexen-cap-table.pdf
+frontend/public/docs/vexen-idea-one-pager.pdf

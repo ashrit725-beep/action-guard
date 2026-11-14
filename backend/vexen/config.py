@@ -2,7 +2,8 @@
 
 ``check()`` returns ``(problems, notes)``. A problem stops the server from
 starting, because it could not work (no database address, a signing secret
-anyone could guess). A note is logged and the server starts anyway (email not
+anyone could guess); on Vercel every API request is answered with it instead
+(see startup.py). A note is logged and the server starts anyway (email not
 set up, AI switched off).
 """
 from __future__ import annotations
@@ -10,7 +11,7 @@ from __future__ import annotations
 import os
 from typing import List, Tuple
 
-from . import llm, urls
+from . import llm, serverless, urls
 
 MIN_SECRET_LENGTH = 32
 
@@ -59,8 +60,11 @@ def check() -> Tuple[List[str], List[str]]:
 
     # Links in approval emails carry a signed token. They must come from configuration: a request's
     # own headers are chosen by whoever sends it, and an agent's call is what creates the email.
-    # A production container (VEXEN_ENV=production, set in the Dockerfile) refuses to start without one.
-    production = (os.environ.get("VEXEN_ENV") or "").strip().lower() == "production"
+    # A production container (VEXEN_ENV=production, set in the Dockerfile) refuses to start without one,
+    # and so does a Vercel production deployment (VERCEL_ENV=production). Vercel supplies the address
+    # itself unless its system environment variables are switched off.
+    production = any((os.environ.get(name) or "").strip().lower() == "production"
+                     for name in ("VEXEN_ENV", "VERCEL_ENV"))
     public_setting = (os.environ.get("PUBLIC_APP_URL") or "").strip()
     configured = urls.configured_public_url()
     if public_setting and not urls.is_address(public_setting):
@@ -78,6 +82,15 @@ def check() -> Tuple[List[str], List[str]]:
     smtp = [os.environ.get(name) for name in ("SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD")]
     if any(smtp) and not all(smtp):
         notes.append("Email is half set up: SMTP_HOST, SMTP_USERNAME and SMTP_PASSWORD are all needed.")
+
+    cron = (os.environ.get(serverless.CRON_SECRET_ENV) or "").strip()
+    if cron and not serverless.cron_secret():
+        notes.append(f"CRON_SECRET is shorter than {serverless.MIN_CRON_SECRET_LENGTH} characters, so it is "
+                     "ignored and the scheduled email run is refused. Generate one with: "
+                     "python backend/scripts/gen_secrets.py")
+    elif not cron and serverless.on_vercel() and all(smtp):
+        notes.append("CRON_SECRET is not set, so Vercel's scheduled email run is refused. Email is still "
+                     "sent right after the request that queues it; retries wait for the next visitor.")
 
     vapid = [os.environ.get("VAPID_PUBLIC_KEY"), os.environ.get("VAPID_PRIVATE_KEY")]
     if any(vapid) and not all(vapid):

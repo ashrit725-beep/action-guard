@@ -62,6 +62,10 @@ chainlit.md
 
 # Deployment
 .vercel
+# Written by a local `vercel build` or `vercel dev` next to api/requirements.txt. Committed, they would
+# make every Vercel build install from them and ignore changes to api/requirements.txt.
+api/pyproject.toml
+api/uv.lock
 
 # Data and databases
 agenthub/agents/youtube/db

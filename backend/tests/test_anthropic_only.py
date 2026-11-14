@@ -12,8 +12,10 @@ from pathlib import Path
 import pytest
 
 BACKEND = Path(__file__).resolve().parent.parent
-RUNTIME = [BACKEND / "server.py", *sorted((BACKEND / "vexen").rglob("*.py"))]
+VERCEL_ENTRY = BACKEND.parent / "api"  # the Vercel Function that hands Vercel the same app
+RUNTIME = [BACKEND / "server.py", *sorted((BACKEND / "vexen").rglob("*.py")), *sorted(VERCEL_ENTRY.glob("*.py"))]
 DOOR = BACKEND / "vexen" / "llm.py"
+REQUIREMENTS = [BACKEND / "requirements.txt", BACKEND / "requirements-dev.txt", VERCEL_ENTRY / "requirements.txt"]
 
 OTHER_SDKS = {
     "openai", "litellm", "emergentintegrations", "google", "vertexai", "mistralai", "cohere",
@@ -107,10 +109,11 @@ def test_only_llm_py_reads_the_key_or_the_address():
 
 
 def test_the_requirements_name_no_other_ai_provider():
-    for name in ("requirements.txt", "requirements-dev.txt"):
-        text = (BACKEND / name).read_text(encoding="utf-8").lower()
+    assert VERCEL_ENTRY / "index.py" in RUNTIME  # the Vercel entry is checked like the rest of the server
+    for path in REQUIREMENTS:
+        text = path.read_text(encoding="utf-8").lower()
         for package in sorted(OTHER_SDKS):
-            assert not re.search(rf"^\s*{re.escape(package)}\b", text, re.M), f"{name} lists {package}"
+            assert not re.search(rf"^\s*{re.escape(package)}\b", text, re.M), f"{path} lists {package}"
 
 
 def test_no_leftovers_of_an_earlier_provider():
